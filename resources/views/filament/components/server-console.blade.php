@@ -62,6 +62,7 @@
             cursorInactiveStyle: 'none',
             allowTransparency: true,
             rows: 30,
+            lineHeight: 1.16,
             theme: theme
         };
 
