@@ -20,7 +20,7 @@
                     @endif
                 </div>
 
-                <!-- Name & Message Content -->
+                <!-- Name -->
                 <div class="flex flex-col flex-grow">
                     <div class="flex items-center space-x-2">
                         <h1 class="font-bold text-white name">{{ data_get($sender, 'name') }}</h1>
@@ -32,7 +32,7 @@
 
                     <!-- Message Content -->
                     @if(filled($content))
-                        <p class="text-gray-300 break-words">{{ nl2br($content) }}</p>
+                        <p class="text-gray-300 break-words">{!! nl2br($content) !!}</p>
                     @endif
 
                     <!-- Embeds -->
@@ -43,6 +43,7 @@
                             $author_icon_url = data_get($embed, 'author.icon_url');
 
                             $url = data_get($embed, 'url');
+
                             $title = data_get($embed, 'title');
                             $description = data_get($embed, 'description');
 
@@ -54,42 +55,38 @@
                             $footer_icon_url = data_get($embed, 'footer.icon_url');
                             $footer_text = data_get($embed, 'footer.text');
                             $footer_timestamp = data_get($embed, 'timestamp');
+
+                            $link = fn ($ref, $child) => $ref ? sprintf('<a href="%s" target="_blank" class="link">%s</a>', $ref, $child) : $child;
                         @endphp
                         <div class="p-3 mt-3 rounded-lg w-full max-w-full embed" style="border-color: #{{ dechex(data_get($embed, 'color')) }}">
                             @if($name)
-                                <div class="flex mb-4 items-right">
-                                    @if($author_url)
-                                        <a href="{{ $author_url }}" target="_blank" class="flex items-center">
-                                    @endif
+                                <div class="flex items-start justify-between mb-8">
+                                    <div class="flex">
                                         @if($author_icon_url)
-                                            <img src="{{ $author_icon_url }}" alt="Author Avatar" 
-                                            class="w-8 h-8 rounded-full mr-2 object-cover avatar">
+                                            <img src="{{ $author_icon_url }}" alt="Author Avatar" class="w-8 h-8 rounded-full mr-2 object-cover avatar">
                                         @endif
-                                        @if($name)
-                                            <h2 class="font-bold text-lg whitespace-nowrap">{{ $name }}</h2>
-                                        @endif
-                                    @if($author_url)
-                                        </a>
-                                    @endif
-                                    
+                                        {!! $link($author_url, <<<HTML
+                                            @if($name)
+                                                <h2 class="font-bold text-lg whitespace-nowrap">$name</h2>
+                                            @endif
+                                        HTML) !!}
+                                    </div>
                                     @if($thumbnail)
-                                        <img src="{{ $thumbnail }}" alt="Embed Thumbnail" class="object-contain thumbnail">
+                                        <div class="flex-shrink-0 ml-4">
+                                            <img src="{{ $thumbnail }}" alt="Embed Thumbnail" class="w-32 h-32 object-contain rounded-lg thumbnail">
+                                        </div>
                                     @endif
                                 </div>
                             @endif
 
                             @if($title)
-                                @if($url)
-                                <a href="{{ $url }}" target="_blank">
-                                @endif
-                                <h3 class="font-bold text-lg break-words">{{ $title }}</h3>
-                                @if($url)
-                                </a>
-                                @endif
+                                {!! $link($url, <<<HTML
+                                    <h3 class="font-bold text-lg break-words">$title</h3>
+                                HTML) !!}
                             @endif
 
                             @if($description)
-                                <p class="break-words description">{{ nl2br($description) }}</p>
+                                <p class="break-words description">{!! nl2br($description) !!}</p>
                             @endif
 
                             @if($fields)
@@ -118,7 +115,7 @@
 
                                     <div class="flex space-x-1">
                                         @if($footer_text)
-                                            <p class="break-words">{{ nl2br($footer_text) }}</p>
+                                            <p class="break-words">{!! nl2br($footer_text) !!}</p>
                                         @endif
 
                                         @if($footer_timestamp)

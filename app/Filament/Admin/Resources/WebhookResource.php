@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\WebhookResource\Pages;
+use App\Filament\Admin\Resources\WebhookResource\Pages\EditWebhookConfiguration;
 use App\Livewire\AlertBanner;
 use App\Models\WebhookConfiguration;
 use Filament\Forms\Components\Checkbox;
@@ -21,15 +22,16 @@ use Filament\Support\Colors\Color;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Set;
 use Filament\Tables\Actions\CreateAction;
-use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ReplicateAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class WebhookResource extends Resource
 {
@@ -88,7 +90,15 @@ class WebhookResource extends Resource
                 ViewAction::make()
                     ->hidden(fn ($record) => static::canEdit($record)),
                 EditAction::make(),
-                DeleteAction::make(),
+                ReplicateAction::make()
+                    ->iconButton()
+                    ->tooltip(trans('filament-actions::replicate.single.label'))
+                    ->modal(false)
+                    ->excludeAttributes(['created_at', 'updated_at'])
+                    ->beforeReplicaSaved(function (WebhookConfiguration $record, WebhookConfiguration $replica) {
+                        $replica->description = $record->description . ' Copy ' . now()->format('Y-m-d H:i:s');
+                    })
+                    ->successRedirectUrl(fn (WebhookConfiguration $replica) => EditWebhookConfiguration::getUrl(['record' => $replica])),
             ])
             ->groupedBulkActions([
                 DeleteBulkAction::make(),
@@ -210,7 +220,8 @@ class WebhookResource extends Resource
                 ->maxItems(10)
                 ->schema([
                     Section::make('Author')
-                        ->collapsible()->collapsed()
+                        ->collapsible()
+                        ->collapsed()
                         ->schema([
                             TextInput::make('author.name')
                                 ->label('Author')
@@ -221,7 +232,8 @@ class WebhookResource extends Resource
                                 ->label('Author Icon URL'),
                         ]),
                     Section::make('Body')
-                        ->collapsible()->collapsed()
+                        ->collapsible()
+                        ->collapsed()
                         ->schema([
                             TextInput::make('title')
                                 ->label('Title')
@@ -236,7 +248,8 @@ class WebhookResource extends Resource
                                 ->label('URL'),
                         ]),
                     Section::make('Images')
-                        ->collapsible()->collapsed()
+                        ->collapsible()
+                        ->collapsed()
                         ->schema([
                             TextInput::make('image.url')
                                 ->label('Image URL'),
@@ -244,10 +257,10 @@ class WebhookResource extends Resource
                                 ->label('Thumbnail URL'),
                         ]),
                     Section::make('Footer')
-                        ->collapsible()->collapsed()
+                        ->collapsible()
+                        ->collapsed()
                         ->schema([
                             TextInput::make('footer.text')
-                                ->required(true)
                                 ->label('Footer'),
                             /* TextInput::make('timestamp')
                                 ->label('Timestamp')
@@ -261,6 +274,7 @@ class WebhookResource extends Resource
                         ->collapsible()->collapsed()
                         ->schema([
                             Repeater::make('fields')
+                                ->dehydratedWhenHidden()
                                 ->reorderable()
                                 ->collapsible()
                                 ->schema([
