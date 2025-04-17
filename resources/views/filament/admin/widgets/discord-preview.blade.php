@@ -58,75 +58,62 @@
 
                             $link = fn ($ref, $child) => $ref ? sprintf('<a href="%s" target="_blank" class="link">%s</a>', $ref, $child) : $child;
                         @endphp
-                        <div class="p-3 mt-3 rounded-lg w-full max-w-full embed" style="border-color: #{{ dechex(data_get($embed, 'color')) }}">
-                            @if($name)
-                                <div class="flex items-start justify-between mb-8">
-                                    <div class="flex">
+                        <div class="p-3 mt-3 rounded-lg w-full max-w-full embed relative" style="border-color: #{{ dechex(data_get($embed, 'color')) }};">
+                            @if($name || $author_icon_url || $thumbnail)
+                                <div class="flex items-start mb-0 relative" style="height: auto; overflow: visible;">
+                                    <div class="flex items-center">
                                         @if($author_icon_url)
                                             <img src="{{ $author_icon_url }}" alt="Author Avatar" class="w-8 h-8 rounded-full mr-2 object-cover avatar">
                                         @endif
-                                        {!! $link($author_url, <<<HTML
-                                            @if($name)
+                                        @if($name)
+                                            {!! $link($author_url, <<<HTML
                                                 <h2 class="font-bold text-lg whitespace-nowrap">$name</h2>
-                                            @endif
-                                        HTML) !!}
+                                            HTML) !!}
+                                        @endif
                                     </div>
                                     @if($thumbnail)
-                                        <div class="flex-shrink-0 ml-4">
-                                            <img src="{{ $thumbnail }}" alt="Embed Thumbnail" class="w-32 h-32 object-contain rounded-lg thumbnail">
-                                        </div>
+                                        <img src="{{ $thumbnail }}" alt="Embed Thumbnail" class="thumbnail rounded-lg" style="width: 64px; height: 64px; object-fit: cover; position: absolute; top: 50%; right: 0; transform: translateY(-15%);">
                                     @endif
                                 </div>
                             @endif
 
                             @if($title)
-                                {!! $link($url, <<<HTML
-                                    <h3 class="font-bold text-lg break-words">$title</h3>
-                                HTML) !!}
+                                <div style="overflow: visible; white-space: nowrap; width: 100%;">
+                                    {!! $link($url, <<<HTML
+                                        <h3 class="font-bold text-lg break-words mb-0" style="margin-bottom: 0;">$title</h3>
+                                    HTML) !!}
+                                </div>
                             @endif
 
                             @if($description)
-                                <p class="break-words description">{!! nl2br($description) !!}</p>
+                                <p class="break-words text-gray-300 mt-0" style="margin-top: 0;">{!! nl2br($description) !!}</p>
                             @endif
 
                             @if($fields)
-                                <div class="mt-2 w-full">
-                                    @foreach($fields as $field)
-                                        <div class="mb-2 w-full">
-                                            <strong class="break-words">{{ data_get($field, 'name') }}</strong>
-                                            <br />
-                                            <span class="break-words field-value">{{ data_get($field, 'value') }}</span>
-                                        </div>
-                                    @endforeach
-                                </div>
+                                @foreach($fields as $field)
+                                    <div class="mt-2">
+                                        <strong class="break-words">{{ data_get($field, 'name') }}</strong>
+                                        <br />
+                                        <span class="break-words">{{ data_get($field, 'value') }}</span>
+                                    </div>
+                                @endforeach
                             @endif
 
                             @if($image)
-                                <div class="mt-3 w-full max-w-full">
-                                    <img src="{{ $image }}" alt="Embed Image" class="object-contain">
-                                </div>
+                                <img src="{{ $image }}" alt="Embed Image" class="object-contain mt-3 w-full">
                             @endif
 
                             @if($footer_text || $footer_timestamp)
-                                <div class="flex text-sm mt-4 footer">
+                                <div class="flex items-center text-sm mt-4 mb-2">
                                     @if($footer_icon_url)
-                                        <img src="{{ $footer_icon_url }}" alt="Footer Icon" class="w-5 h-5 rounded-full mr-2 object-cover footer-icon">
+                                        <img src="{{ $footer_icon_url }}" alt="Footer Icon" class="w-5 h-5 rounded-full mr-2 object-cover">
                                     @endif
-
-                                    <div class="flex space-x-1">
-                                        @if($footer_text)
-                                            <p class="break-words">{!! nl2br($footer_text) !!}</p>
-                                        @endif
-
-                                        @if($footer_timestamp)
-                                            <span class="timestamp">
-                                                @if($footer_text)
-                                                <span class="spacer">•</span>
-                                                @endif
-                                                {{ $footer_timestamp }}
-                                            </span>
-                                        @endif
-                                    </div>
+                                    @if($footer_text)
+                                        <p class="break-words">{!! nl2br($footer_text) !!}</p>
+                                    @endif
+                                    @if($footer_timestamp)
+                                        <span class="ml-2 text-gray-400">{{ $footer_timestamp }}</span>
+                                    @endif
                                 </div>
                             @endif
                         </div>
