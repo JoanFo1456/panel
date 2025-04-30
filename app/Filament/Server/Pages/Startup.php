@@ -7,6 +7,7 @@ use App\Filament\Components\Forms\Actions\PreviewStartupAction;
 use App\Models\Permission;
 use App\Models\Server;
 use App\Models\ServerVariable;
+use App\Services\Eggs\EggChangerService;
 use Closure;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Component;
@@ -17,10 +18,14 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Notifications\Notification;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Validator;
+use App\Filament\Widgets\EggChanger;
+use App\Models\Egg;
 
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ToggleButtons;
 class Startup extends ServerFormPage
 {
     protected static ?string $navigationIcon = 'tabler-player-play';
@@ -97,11 +102,67 @@ class Startup extends ServerFormPage
                         'md' => 2,
                         'lg' => 2,
                     ]),
+                Select::make('egg_id')
+                    ->prefixIcon('tabler-egg')
+                    ->relationship('egg', 'name')
+                    ->label(trans('Egg'))
+                    ->searchable()
+                    ->required()
+                    ->disabled(true)
+                    ->hintAction(
+                        Action::make('change_egg')
+                            ->label(trans('admin/server.change_egg'))
+                            ->modalHeading(trans('admin/server.change_egg'))
+                            ->modalWidth('lg')
+                            ->form([
+                                Select::make('egg_id')
+                                    ->label(trans('admin/server.new_egg'))
+                                    ->prefixIcon('tabler-egg')
+                                    ->options(fn () => Egg::all()->mapWithKeys(fn (Egg $egg) => [$egg->id => $egg->name]))
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(),
+                                Toggle::make('keepOldVariables')
+                                    ->label(trans('admin/server.keep_old_variables'))
+                                    ->default(true),
+                                
+                            ])
+                            
+                            ->action(function (array $data, $livewire) {
+                                $server = Filament::getTenant();
+                                $service = app(EggChangerService::class);
+                            
+                                try {
+                                    $service->handle($server, $data['egg_id'], $data['keepOldVariables']);
+                            
+                                    Notification::make()
+                                        ->success()
+                                        ->title('Egg Changed')
+                                        ->body('The egg has been successfully changed.')
+                                        ->send();
+                            
+                                    $livewire->mount($livewire->getRecord());
+                                } catch (\Exception $e) {
+                                    Notification::make()
+                                        ->danger()
+                                        ->title('Egg Change Failed')
+                                        ->body($e->getMessage())
+                                        ->send();
+                                }
+                            })
+                            
+                    )
+                    ->columnSpan([
+                        'default' => 6,
+                        'sm' => 3,
+                        'md' => 3,
+                        'lg' => 4,
+                    ]),
                 Section::make('Server Variables')
                     ->schema([
                         Repeater::make('server_variables')
                             ->label('')
-                            ->relationship('serverVariables', fn (Builder $query) => $query->where('egg_variables.user_viewable', true)->orderByPowerJoins('variable.sort'))
+                            ->relationship('ServerVariables')
                             ->grid()
                             ->disabled(fn () => !auth()->user()->can(Permission::ACTION_STARTUP_UPDATE, $server))
                             ->reorderable(false)->addable(false)->deletable(false)
