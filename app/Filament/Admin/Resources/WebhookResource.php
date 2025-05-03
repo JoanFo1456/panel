@@ -204,7 +204,7 @@ class WebhookResource extends Resource
                     TextInput::make('content')
                         ->label('Message')
                         ->live()
-                        ->required(fn (Get $get) => empty($get('embeds'))),
+                        ->required(fn (Get $get) => !filled($get('embeds'))),
                     TextInput::make('thread_name')
                         ->label('Forum Thread Name'),
                     CheckboxList::make('flags')
@@ -241,7 +241,7 @@ class WebhookResource extends Resource
                 ->live()
                 ->itemLabel(fn (array $state) => $state['title'])
                 ->addActionLabel('Add embed')
-                ->required(fn (Get $get) => $get('../messages.needstobeastringhere.content') === '')
+                ->required(fn (Get $get) => !filled($get('content')))
                 ->reorderable()
                 ->collapsible()
                 ->maxItems(10)

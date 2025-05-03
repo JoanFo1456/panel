@@ -89,12 +89,6 @@ class DiscordPreview extends Widget
 
         // If this is approved, add the other pelican contributors.
         return match ($author) {
-            'JoanFo' => [
-                'name' => $author,
-                'avatar' => 'https://www.gravatar.com/avatar/8a50b66d9270c58d382cc3c840ec8078',
-                'decoration' => 'https://cdn.discordapp.com/avatar-decoration-presets/a_af5ee420e5f860ff2cdbb5fa4633f2cf.png?size=96&amp;amp;passthrough=false',
-                'human' => true,
-            ],
             'Lance' => [
                 'name' => $author,
                 'avatar' => 'https://cdn.discordapp.com/avatars/108350949411532800/5c0366c62ccb4263734f9decebf4944d.png',
@@ -105,6 +99,12 @@ class DiscordPreview extends Widget
                 'name' => $author,
                 'avatar' => 'https://cdn.discordapp.com/avatars/168955129830178816/d6de49de0ff5f3f3338c8cad510825cf.png',
                 'decoration' => null,
+                'human' => true,
+            ],
+            'JoanFo' => [
+                'name' => $author,
+                'avatar' => 'https://www.gravatar.com/avatar/8a50b66d9270c58d382cc3c840ec8078',
+                'decoration' => 'https://cdn.discordapp.com/avatar-decoration-presets/a_af5ee420e5f860ff2cdbb5fa4633f2cf.png?size=96&amp;amp;passthrough=false',
                 'human' => true,
             ],
             default => [
