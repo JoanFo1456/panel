@@ -19,13 +19,13 @@ class DiscordPreview extends Widget
     protected int|string|array $columnSpan = 1;
 
     public WebhookConfiguration $record;
-
+    
     public function getViewData(): array
     {
         $data = $this->record->run(true);
 
-        $payload = $this->record->replaceVars($data, json_encode($this->record->payload));
-        $payload = json_decode($payload, true);
+        // Use processPayload, json_encode seems that makes everything not show.
+        $payload = $this->processPayload($this->record->payload, $data);
 
         $embeds = data_get($payload, 'embeds', []);
 
@@ -45,6 +45,27 @@ class DiscordPreview extends Widget
         ];
     }
 
+    /**
+     *
+     * @param array|string $payload
+     * @param array $data
+     * @return array|string
+     */
+    private function processPayload(array|string $payload, array $data): array|string
+    {
+        if (is_string($payload)) {
+            return $this->record->replaceVars($data, $payload);
+        }
+
+        foreach ($payload as $key => $value) {
+            $payload[$key] = is_array($value) || is_string($value)
+                ? $this->processPayload($value, $data)
+                : $value;
+        }
+
+        return $payload;
+    }
+
     /** @return array<string, mixed> */
     private function easterEgg(?string $author): array
     {
@@ -54,7 +75,7 @@ class DiscordPreview extends Widget
         return match ($author) {
             'JoanFo' => [
                 'name' => $author,
-                'avatar' => 'https://cdn.discordapp.com/avatars/668228483796959272/fa232a470776f48fc9aa53d5a8a6a074.png',
+                'avatar' => 'https://www.gravatar.com/avatar/8a50b66d9270c58d382cc3c840ec8078',
                 'decoration' => 'https://cdn.discordapp.com/avatar-decoration-presets/a_af5ee420e5f860ff2cdbb5fa4633f2cf.png?size=96&amp;amp;passthrough=false',
                 'human' => true,
             ],
