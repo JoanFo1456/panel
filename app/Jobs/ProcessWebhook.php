@@ -28,14 +28,14 @@ class ProcessWebhook implements ShouldQueue
 
     public function handle(): void
     {
-        $data = $this->data[0];
+        $data = $this->data[0] ?? [];
+        if (count($data) === 1) {
+            $data = reset($data);
+        }
+        $data = is_array($data) ? $data : (json_decode($data, true) ?? []);
+        $data['event'] = $this->webhookConfiguration->transformClassName($this->eventName);
 
         if ($this->webhookConfiguration->type === WebhookType::Discord) {
-            $data = array_merge(
-                is_array($data) ? $data : json_decode($data, true),
-                ['event' => $this->webhookConfiguration->transformClassName($this->eventName)]
-            );
-
             $payload = json_encode($this->webhookConfiguration->payload);
             $tmp = $this->webhookConfiguration->replaceVars($data, $payload);
             $data = json_decode($tmp, true);
@@ -53,12 +53,14 @@ class ProcessWebhook implements ShouldQueue
         }
 
         try {
-            $headers = [];
             $customHeaders = $this->webhookConfiguration->headers;
             if ($this->webhookConfiguration->type === WebhookType::Regular && empty($customHeaders)) {
-                $headers = ['X-Webhook-Event' => $this->eventName];
-            } else {
-                $headers = $customHeaders;
+                $customHeaders = ['X-Webhook-Event' => '{{event}}'];
+            }
+
+            $headers = [];
+            foreach ($customHeaders as $key => $value) {
+                $headers[$key] = $this->webhookConfiguration->replaceVars($data, $value);
             }
 
             Http::withHeaders($headers)->post($this->webhookConfiguration->endpoint, $data)->throw();
