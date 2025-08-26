@@ -2,8 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\Auth\EditProfile;
-use Filament\Navigation\MenuItem;
+use Filament\Actions\Action;
 use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 
@@ -20,10 +19,8 @@ class AdminPanelProvider extends PanelProvider
             ->breadcrumbs(false)
             ->sidebarCollapsibleOnDesktop()
             ->userMenuItems([
-                'profile' => MenuItem::make()
-                    ->label(fn () => trans('filament-panels::pages/auth/edit-profile.label'))
-                    ->url(fn () => EditProfile::getUrl(panel: 'app')),
-                MenuItem::make()
+                'profile' => fn (Action $action) => $action->label(auth()->user()->username),
+                Action::make('exitAdmin')
                     ->label(fn () => trans('profile.exit_admin'))
                     ->url('/')
                     ->icon('tabler-arrow-back')

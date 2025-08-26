@@ -6,7 +6,8 @@ use App\Facades\Plugins;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Http\Middleware\LanguageMiddleware;
-use App\Http\Middleware\RequireTwoFactorAuthentication;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Auth\MultiFactor\Email\EmailAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -36,6 +37,10 @@ abstract class PanelProvider extends BasePanelProvider
             ->profile(EditProfile::class, false)
             ->login(Login::class)
             ->passwordReset()
+            ->multiFactorAuthentication([
+                AppAuthentication::make()->recoverable(),
+                EmailAuthentication::make(),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -47,7 +52,6 @@ abstract class PanelProvider extends BasePanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 LanguageMiddleware::class,
-                RequireTwoFactorAuthentication::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

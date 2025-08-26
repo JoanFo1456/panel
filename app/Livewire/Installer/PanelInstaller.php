@@ -14,21 +14,22 @@ use App\Services\Users\UserCreationService;
 use App\Traits\CheckMigrationsTrait;
 use App\Traits\EnvironmentWriterTrait;
 use Exception;
-use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Actions\Action;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+use Filament\Schemas\Components\Wizard;
+use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\SimplePage;
-use Filament\Support\Enums\MaxWidth;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
 
 /**
- * @property Form $form
+ * @property Schema $form
  */
 class PanelInstaller extends SimplePage implements HasForms
 {
@@ -36,14 +37,14 @@ class PanelInstaller extends SimplePage implements HasForms
     use EnvironmentWriterTrait;
     use InteractsWithForms;
 
-    /** @var array<mixed> */
+    /** @var array<string, mixed> */
     public array $data = [];
 
-    protected static string $view = 'filament.pages.installer';
+    protected string $view = 'filament.pages.installer';
 
-    public function getMaxWidth(): MaxWidth|string
+    public function getMaxContentWidth(): Width|string
     {
-        return MaxWidth::SevenExtraLarge;
+        return Width::SevenExtraLarge;
     }
 
     public static function isInstalled(): bool
@@ -58,6 +59,9 @@ class PanelInstaller extends SimplePage implements HasForms
         $this->form->fill();
     }
 
+    /** @return Component[]
+     * @throws Exception
+     */
     protected function getFormSchema(): array
     {
         return [

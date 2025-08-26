@@ -2,8 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
-use Filament\Navigation\MenuItem;
 use Filament\Panel;
 
 class AppPanelProvider extends PanelProvider
@@ -18,7 +18,8 @@ class AppPanelProvider extends PanelProvider
             ->breadcrumbs(false)
             ->navigation(false)
             ->userMenuItems([
-                MenuItem::make()
+                'profile' => fn (Action $action) => $action->label(auth()->user()->username),
+                Action::make('toAdmin')
                     ->label(trans('profile.admin'))
                     ->url('/admin')
                     ->icon('tabler-arrow-forward')

@@ -2,45 +2,45 @@
 
 namespace App\Filament\Server\Pages;
 
+use Exception;
 use App\Facades\Activity;
-use App\Filament\Components\Forms\Actions\PreviewStartupAction;
+use App\Filament\Components\Actions\PreviewStartupAction;
 use App\Models\Permission;
 use App\Models\Server;
 use App\Models\ServerVariable;
 use Closure;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\Component;
+use Filament\Schemas\Components\Component;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Illuminate\Contracts\Support\Htmlable;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Validator;
 
 class Startup extends ServerFormPage
 {
-    protected static ?string $navigationIcon = 'tabler-player-play';
+    protected static string|\BackedEnum|null $navigationIcon = 'tabler-player-play';
 
     protected static ?int $navigationSort = 9;
 
-    public function form(Form $form): Form
+    /**
+     * @throws Exception
+     */
+    public function form(Schema $schema): Schema
     {
-        /** @var Server $server */
-        $server = Filament::getTenant();
-
-        return $form
+        return parent::form($schema)
             ->columns([
                 'default' => 1,
                 'sm' => 1,
                 'md' => 4,
                 'lg' => 6,
             ])
-            ->schema([
+            ->components([
                 Hidden::make('previewing')
                     ->default(false),
                 Textarea::make('startup')
@@ -69,7 +69,7 @@ class Startup extends ServerFormPage
                     ->label(trans('server/startup.docker_image'))
                     ->live()
                     ->visible(fn (Server $server) => in_array($server->image, $server->egg->docker_images))
-                    ->disabled(fn () => !auth()->user()->can(Permission::ACTION_STARTUP_DOCKER_IMAGE, $server))
+                    ->disabled(fn (Server $server) => !auth()->user()->can(Permission::ACTION_STARTUP_DOCKER_IMAGE, $server))
                     ->afterStateUpdated(function ($state, Server $server) {
                         $original = $server->image;
                         $server->forceFill(['image' => $state])->saveOrFail();
@@ -99,12 +99,13 @@ class Startup extends ServerFormPage
                         'lg' => 2,
                     ]),
                 Section::make(trans('server/startup.variables'))
+                    ->columnSpanFull()
                     ->schema([
                         Repeater::make('server_variables')
                             ->hiddenLabel()
                             ->relationship('serverVariables', fn (Builder $query) => $query->where('egg_variables.user_viewable', true)->orderByPowerJoins('variable.sort'))
                             ->grid()
-                            ->disabled(fn () => !auth()->user()->can(Permission::ACTION_STARTUP_UPDATE, $server))
+                            ->disabled(fn (Server $server) => !auth()->user()->can(Permission::ACTION_STARTUP_UPDATE, $server))
                             ->reorderable(false)->addable(false)->deletable(false)
                             ->schema(function () {
                                 $text = TextInput::make('variable_value')
@@ -177,7 +178,7 @@ class Startup extends ServerFormPage
             return $containsRuleIn;
         }
 
-        throw new \Exception('Component type not supported: ' . $component::class);
+        throw new Exception('Component type not supported: ' . $component::class);
     }
 
     /**
@@ -237,7 +238,7 @@ class Startup extends ServerFormPage
                 ->body(fn () => $original . ' -> ' . $state)
                 ->success()
                 ->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Notification::make()
                 ->title(trans('server/startup.fail', ['variable' => $serverVariable->variable->name]))
                 ->body($e->getMessage())
@@ -248,7 +249,7 @@ class Startup extends ServerFormPage
         return null;
     }
 
-    public function getTitle(): string|Htmlable
+    public function getTitle(): string
     {
         return trans('server/startup.title');
     }

@@ -3,11 +3,11 @@
 namespace App\Extensions\OAuth\Schemas;
 
 use App\Extensions\OAuth\OAuthSchemaInterface;
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Wizard\Step;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Wizard\Step;
+use Filament\Schemas\Components\Component;
 use Illuminate\Support\Str;
 
 abstract class OAuthSchema implements OAuthSchemaInterface

@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Installer\Steps;
 
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Wizard\Step;
+use Filament\Schemas\Components\Wizard\Step;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Section;
 use Filament\Support\Exceptions\Halt;
 
 class RequirementsStep
@@ -23,8 +23,9 @@ class RequirementsStep
                 ->icon($correctPhpVersion ? 'tabler-check' : 'tabler-x')
                 ->iconColor($correctPhpVersion ? 'success' : 'danger')
                 ->schema([
-                    Placeholder::make('')
-                        ->content('Your PHP Version is ' . PHP_VERSION . '.'),
+                    TextEntry::make('php_version')
+                        ->hiddenLabel()
+                        ->state('Your PHP Version is ' . PHP_VERSION . '.'),
                 ]),
         ];
 
@@ -46,11 +47,13 @@ class RequirementsStep
             ->icon($allExtensionsInstalled ? 'tabler-check' : 'tabler-x')
             ->iconColor($allExtensionsInstalled ? 'success' : 'danger')
             ->schema([
-                Placeholder::make('')
-                    ->content('All needed PHP Extensions are installed.')
+                TextEntry::make('all_extensions_installed')
+                    ->hiddenLabel()
+                    ->state('All needed PHP Extensions are installed.')
                     ->visible($allExtensionsInstalled),
-                Placeholder::make('')
-                    ->content('The following PHP Extensions are missing: ' . implode(', ', array_keys($phpExtensions, false)))
+                TextEntry::make('extensions_missing')
+                    ->hiddenLabel()
+                    ->state('The following PHP Extensions are missing: ' . implode(', ', array_keys($phpExtensions, false)))
                     ->visible(!$allExtensionsInstalled),
             ]);
 
@@ -65,11 +68,13 @@ class RequirementsStep
             ->icon($correctFolderPermissions ? 'tabler-check' : 'tabler-x')
             ->iconColor($correctFolderPermissions ? 'success' : 'danger')
             ->schema([
-                Placeholder::make('')
-                    ->content('All Folders have the correct permissions.')
+                TextEntry::make('correct_folder_permissions')
+                    ->hiddenLabel()
+                    ->state('All Folders have the correct permissions.')
                     ->visible($correctFolderPermissions),
-                Placeholder::make('')
-                    ->content('The following Folders have wrong permissions: ' . implode(', ', array_keys($folderPermissions, false)))
+                TextEntry::make('wrong_folder_permissions')
+                    ->hiddenLabel()
+                    ->state('The following Folders have wrong permissions: ' . implode(', ', array_keys($folderPermissions, false)))
                     ->visible(!$correctFolderPermissions),
             ]);
 
