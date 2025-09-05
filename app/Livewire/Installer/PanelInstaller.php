@@ -9,6 +9,7 @@ use App\Livewire\Installer\Steps\QueueStep;
 use App\Livewire\Installer\Steps\RequirementsStep;
 use App\Livewire\Installer\Steps\SessionStep;
 use App\Models\User;
+use App\Services\Helpers\LanguageService;
 use App\Services\Users\UserCreationService;
 use App\Traits\CheckMigrationsTrait;
 use App\Traits\EnvironmentWriterTrait;
@@ -24,6 +25,7 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
 use Filament\Support\Exceptions\Halt;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
@@ -41,6 +43,11 @@ class PanelInstaller extends SimplePage implements HasForms
     public array $data = [];
 
     protected string $view = 'filament.pages.installer';
+
+    public function getTitle(): string
+    {
+        return trans('installer.title');
+    }
 
     public function getMaxContentWidth(): Width|string
     {
@@ -65,6 +72,10 @@ class PanelInstaller extends SimplePage implements HasForms
     protected function getFormSchema(): array
     {
         return [
+            Grid::make()
+                ->schema([
+                    $this->getLanguageComponent(),
+                ]),
             Wizard::make([
                 RequirementsStep::make(),
                 EnvironmentStep::make($this),
@@ -74,18 +85,38 @@ class PanelInstaller extends SimplePage implements HasForms
                 SessionStep::make(),
             ])
                 ->persistStepInQueryString()
-                ->nextAction(fn (Action $action) => $action->keyBindings('enter'))
+                ->nextAction(function (Action $action) {
+                    $action
+                        ->label(trans('installer.next_step'))
+                        ->keyBindings('enter');
+                })
                 ->submitAction(new HtmlString(Blade::render(<<<'BLADE'
                     <x-filament::button
                         type="submit"
                         size="sm"
                         wire:loading.attr="disabled"
                     >
-                        Finish
+                        {{ trans('installer.finish') }}
                         <span wire:loading><x-filament::loading-indicator class="h-4 w-4" /></span>
                     </x-filament::button>
                 BLADE))),
         ];
+    }
+
+    protected function getLanguageComponent(): Component
+    {
+        return Select::make('language')
+            ->hiddenLabel()
+            ->prefix(trans('profile.language'))
+            ->prefixIcon('tabler-flag')
+            ->required()
+            ->live()
+            ->default('en')
+            ->selectablePlaceholder(false)
+            ->options(fn (LanguageService $languageService) => $languageService->getAvailableLanguages())
+            ->afterStateUpdated(fn ($state, Application $app) => $app->setLocale($state ?? config('app.locale')))
+            ->native(false)
+            ->columnStart(4);
     }
 
     protected function getFormStatePath(): ?string
@@ -125,13 +156,13 @@ class PanelInstaller extends SimplePage implements HasForms
             report($exception);
 
             Notification::make()
-                ->title('Could not write to .env file')
+                ->title(trans('installer.exceptions.write_env'))
                 ->body($exception->getMessage())
                 ->danger()
                 ->persistent()
                 ->send();
 
-            throw new Halt('Error while writing .env file');
+            throw new Halt(trans('installer.exceptions.write_env'));
         }
 
         Artisan::call('config:clear');
@@ -148,23 +179,23 @@ class PanelInstaller extends SimplePage implements HasForms
             report($exception);
 
             Notification::make()
-                ->title('Migrations failed')
+                ->title(trans('installer.database.exceptions.migration'))
                 ->body($exception->getMessage())
                 ->danger()
                 ->persistent()
                 ->send();
 
-            throw new Halt('Error while running migrations');
+            throw new Halt(trans('installer.exceptions.migration'));
         }
 
         if (!$this->hasCompletedMigrations()) {
             Notification::make()
-                ->title('Migrations failed')
+                ->title(trans('installer.database.exceptions.migration'))
                 ->danger()
                 ->persistent()
                 ->send();
 
-            throw new Halt('Migrations failed');
+            throw new Halt(trans('installer.database.exceptions.migration'));
         }
     }
 
@@ -179,13 +210,13 @@ class PanelInstaller extends SimplePage implements HasForms
             report($exception);
 
             Notification::make()
-                ->title('Could not create admin user')
+                ->title(trans('installer.exceptions.create_user'))
                 ->body($exception->getMessage())
                 ->danger()
                 ->persistent()
                 ->send();
 
-            throw new Halt('Error while creating admin user');
+            throw new Halt(trans('installer.exceptions.create_user'));
         }
     }
 }

@@ -88,7 +88,7 @@ class Settings extends ServerFormPage
                                     ->disabled()
                                     ->columnSpan(1),
                                 TextInput::make('node.name')
-                                    ->label(trans('server/setting.server_info.node_name'))
+                                    ->label(trans('server/setting.node_info.name'))
                                     ->formatStateUsing(fn (Server $server) => $server->node->name)
                                     ->disabled()
                                     ->columnSpan(1),
@@ -135,23 +135,23 @@ class Settings extends ServerFormPage
                                     ->prefixIcon('tabler-file-zip')
                                     ->columnSpan(1)
                                     ->disabled()
-                                    ->formatStateUsing(fn ($state, Server $server) => !$state ? 'No Backups' : $server->backups->count() . ' ' .trans('server/setting.server_info.limits.of') . ' ' . $state),
+                                    ->formatStateUsing(fn ($state, Server $server) => !$state ? trans('server/backup.empty') : $server->backups->count() . ' ' .trans('server/setting.server_info.limits.of', ['max' => $state])),
                                 TextInput::make('database_limit')
                                     ->label('')
                                     ->prefix(trans('server/setting.server_info.limits.databases'))
                                     ->prefixIcon('tabler-database')
                                     ->columnSpan(1)
                                     ->disabled()
-                                    ->formatStateUsing(fn ($state, Server $server) => !$state ? 'No Databases' : $server->databases->count() . ' ' . trans('server/setting.server_info.limits.of') . ' ' .$state),
+                                    ->formatStateUsing(fn ($state, Server $server) => !$state ? trans('server/database.empty') : $server->databases->count() . ' ' . trans('server/setting.server_info.limits.of', ['max' => $state])),
                                 TextInput::make('allocation_limit')
                                     ->label('')
                                     ->prefix(trans('server/setting.server_info.limits.allocations'))
                                     ->prefixIcon('tabler-network')
                                     ->columnSpan(1)
                                     ->disabled()
-                                    ->formatStateUsing(fn ($state, Server $server) => !$state ? trans('server/setting.server_info.limits.no_allocations') : $server->allocations->count() . ' ' .trans('server/setting.server_info.limits.of') . ' ' . $state),
+                                    ->formatStateUsing(fn ($state, Server $server) => !$state ? trans('server/setting.server_info.limits.no_allocations') : $server->allocations->count() . ' ' .trans('server/setting.server_info.limits.of', ['max' => $state])),
                             ]),
-                        Fieldset::make(trans('server/setting.server_info.sftp.title'))
+                        Fieldset::make(trans('server/setting.node_info.sftp.title'))
                             ->columnSpanFull()
                             ->hidden(fn (Server $server) => !auth()->user()->can(Permission::ACTION_FILE_SFTP, $server))
                             ->columns([
@@ -162,13 +162,13 @@ class Settings extends ServerFormPage
                             ])
                             ->schema([
                                 TextInput::make('connection')
-                                    ->label(trans('server/setting.server_info.sftp.connection'))
+                                    ->label(trans('server/setting.node_info.sftp.connection'))
                                     ->columnSpan(1)
                                     ->disabled()
                                     ->copyable(fn () => request()->isSecure())
                                     ->hintAction(
                                         Action::make('connect_sftp')
-                                            ->label(trans('server/setting.server_info.sftp.action'))
+                                            ->label(trans('server/setting.node_info.sftp.action'))
                                             ->color('success')
                                             ->icon('tabler-plug')
                                             ->url(function (Server $server) {
@@ -183,15 +183,15 @@ class Settings extends ServerFormPage
                                         return 'sftp://' . auth()->user()->username . '.' . $server->uuid_short . '@' . $fqdn . ':' . $server->node->daemon_sftp;
                                     }),
                                 TextInput::make('username')
-                                    ->label(trans('server/setting.server_info.sftp.username'))
+                                    ->label(trans('server/setting.node_info.sftp.username'))
                                     ->columnSpan(1)
                                     ->copyable(fn () => request()->isSecure())
                                     ->disabled()
                                     ->formatStateUsing(fn (Server $server) => auth()->user()->username . '.' . $server->uuid_short),
                                 TextEntry::make('password')
-                                    ->label(trans('server/setting.server_info.sftp.password'))
+                                    ->label(trans('server/setting.node_info.sftp.password'))
                                     ->columnSpan(1)
-                                    ->label(trans('server/setting.server_info.sftp.password_body')),
+                                    ->label(trans('server/setting.node_info.sftp.password_body')),
                             ]),
                     ]),
                 Section::make(trans('server/setting.reinstall.title'))
@@ -262,13 +262,13 @@ class Settings extends ServerFormPage
             }
 
             Notification::make()
-                ->title(trans('server/setting.notification_name'))
+                ->title(trans('server/setting.server_info.notification_name'))
                 ->body(fn () => $original . ' -> ' . $name)
                 ->success()
                 ->send();
         } catch (Exception $exception) {
             Notification::make()
-                ->title(trans('server/setting.failed'))
+                ->title(trans('server/setting.server_info.failed'))
                 ->body($exception->getMessage())
                 ->danger()
                 ->send();
@@ -293,13 +293,13 @@ class Settings extends ServerFormPage
             }
 
             Notification::make()
-                ->title(trans('server/setting.notification_description'))
+                ->title(trans('server/setting.server_info.notification_description'))
                 ->body(fn () => $original . ' -> ' . $description)
                 ->success()
                 ->send();
         } catch (Exception $exception) {
             Notification::make()
-                ->title(trans('server/setting.failed'))
+                ->title(trans('server/setting.server_info.failed'))
                 ->body($exception->getMessage())
                 ->danger()
                 ->send();
