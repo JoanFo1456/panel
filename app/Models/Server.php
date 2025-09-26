@@ -371,6 +371,14 @@ class Server extends Model implements Validatable
     }
 
     /**
+     * @return HasMany<ServerWebhook, $this>
+     */
+    public function serverWebhooks(): HasMany
+    {
+        return $this->hasMany(ServerWebhook::class, 'server_id', 'id');
+    }
+
+    /**
      * Returns all the activity log entries where the server is the subject.
      */
     public function activity(): MorphToMany
