@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Events\ActivityLogged;
 use App\Listeners\DispatchWebhooks;
-use App\Listeners\DispatchServerWebhooks;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -17,6 +16,6 @@ class EventServiceProvider extends ServiceProvider
         'eloquent.created*' => [DispatchWebhooks::class],
         'eloquent.deleted*' => [DispatchWebhooks::class],
         'eloquent.updated*' => [DispatchWebhooks::class],
-        ActivityLogged::class => [DispatchServerWebhooks::class],
+        ActivityLogged::class => [DispatchWebhooks::class],
     ];
 }

@@ -3,7 +3,6 @@
 namespace App\Filament\Server\Resources\ServerWebhooks\Pages;
 
 use App\Filament\Server\Resources\ServerWebhooks\ServerWebhookResource;
-use App\Models\ServerWebhook;
 use App\Traits\Filament\CanCustomizeHeaderActions;
 use App\Traits\Filament\CanCustomizeHeaderWidgets;
 use Filament\Actions\Action;
@@ -27,7 +26,7 @@ class ListServerWebhooks extends ListRecords
                 ->hidden(function () {
                     /** @var \App\Models\Server $server */
                     $server = Filament::getTenant();
-                    return ServerWebhook::where('server_id', $server->id)->count() <= 0;
+                    return $server->serverWebhooks()->count() <= 0;
                 }),
         ];
     }

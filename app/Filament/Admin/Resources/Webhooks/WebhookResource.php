@@ -2,12 +2,14 @@
 
 namespace App\Filament\Admin\Resources\Webhooks;
 
+use App\Enums\WebhookScope;
 use App\Enums\WebhookType;
 use App\Filament\Admin\Resources\Webhooks\Pages\CreateWebhookConfiguration;
 use App\Filament\Admin\Resources\Webhooks\Pages\EditWebhookConfiguration;
 use App\Filament\Admin\Resources\Webhooks\Pages\ListWebhookConfigurations;
 use App\Filament\Admin\Resources\Webhooks\Pages\ViewWebhookConfiguration;
 use App\Livewire\AlertBanner;
+use App\Models\Server;
 use App\Models\WebhookConfiguration;
 use App\Traits\Filament\CanCustomizePages;
 use App\Traits\Filament\CanCustomizeRelations;
@@ -25,6 +27,7 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
@@ -39,6 +42,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Component as Livewire;
 use Livewire\Features\SupportEvents\HandlesEvents;
 
@@ -86,6 +90,12 @@ class WebhookResource extends Resource
         return $table
             ->columns([
                 IconColumn::make('type'),
+                TextColumn::make('server.name')
+                    ->label('Server')
+                    ->placeholder('—')
+                    ->icon('tabler-server')
+                    ->iconColor('info')
+                    ->sortable(),
                 TextColumn::make('endpoint')
                     ->label(trans('admin/webhook.table.endpoint'))
                     ->formatStateUsing(fn (string $state) => str($state)->after('://'))
@@ -93,8 +103,6 @@ class WebhookResource extends Resource
                     ->wrap(),
                 TextColumn::make('description')
                     ->label(trans('admin/webhook.table.description')),
-                TextColumn::make('endpoint')
-                    ->label(trans('admin/webhook.table.endpoint')),
             ])
             ->recordActions([
                 ViewAction::make()
@@ -109,7 +117,13 @@ class WebhookResource extends Resource
                     ->successRedirectUrl(fn (WebhookConfiguration $replica) => EditWebhookConfiguration::getUrl(['record' => $replica])),
             ])
             ->groupedBulkActions([
-                DeleteBulkAction::make(),
+                DeleteBulkAction::make()
+                    ->requiresConfirmation()
+                    ->modalHeading('Delete Webhooks')
+                    ->modalDescription('Are you sure you want to delete these webhooks?')
+                    ->action(function (Collection $records) {
+                        $records->each->delete();
+                    }),
             ])
             ->emptyStateIcon('tabler-webhook')
             ->emptyStateDescription('')
@@ -129,6 +143,16 @@ class WebhookResource extends Resource
     {
         return $schema
             ->components([
+                Select::make('server_id')
+                    ->label('Server')
+                    ->options(Server::query()->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->columnSpanFull()
+                    ->live()
+                    ->required(fn () => request()->get('activeTab') === 'server-webhooks')
+                    ->visible(fn () => request()->get('activeTab') === 'server-webhooks')
+                    ->helperText('Select the server for this webhook.'),
                 ToggleButtons::make('type')
                     ->live()
                     ->inline()
@@ -167,12 +191,22 @@ class WebhookResource extends Resource
                     ->schema([
                         CheckboxList::make('events')
                             ->live()
-                            ->options(fn () => WebhookConfiguration::filamentCheckboxList())
+                            ->options(function (Get $get, ?WebhookConfiguration $record) {
+                                if ($record) {
+                                    return WebhookConfiguration::filamentCheckboxList($record->scope);
+                                }
+                                
+                                $activeTab = request()->get('activeTab');
+                                $serverId = $get('server_id');
+                                $scope = ($activeTab === 'server-webhooks' || $serverId) ? WebhookScope::SERVER : WebhookScope::GLOBAL;
+                                return WebhookConfiguration::filamentCheckboxList($scope);
+                            })
                             ->searchable()
                             ->bulkToggleable()
                             ->columns(3)
                             ->columnSpanFull()
-                            ->required(),
+                            ->required()
+                            ->in(fn (CheckboxList $component): array => array_keys($component->getEnabledOptions())),
                     ]),
             ]);
     }

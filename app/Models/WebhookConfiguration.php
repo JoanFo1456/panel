@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use App\Enums\WebhookScope;
 use App\Enums\WebhookType;
 use App\Jobs\ProcessWebhook;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Livewire\Features\SupportEvents\HandlesEvents;
-
+use \App\Services\WebhookService;
 /**
  * @property string|array<string, mixed>|null $payload
  * @property string $endpoint
@@ -34,6 +37,8 @@ class WebhookConfiguration extends Model
     ];
 
     protected $fillable = [
+        'scope',
+        'server_id',
         'type',
         'payload',
         'endpoint',
@@ -46,6 +51,7 @@ class WebhookConfiguration extends Model
      * Default values for specific fields in the database.
      */
     protected $attributes = [
+        'scope' => WebhookScope::GLOBAL,
         'type' => WebhookType::Regular,
         'payload' => null,
     ];
@@ -53,6 +59,7 @@ class WebhookConfiguration extends Model
     protected function casts(): array
     {
         return [
+            'scope' => WebhookScope::class,
             'events' => 'array',
             'payload' => 'array',
             'type' => WebhookType::class,
@@ -90,6 +97,11 @@ class WebhookConfiguration extends Model
         return $this->hasMany(Webhook::class);
     }
 
+    public function server(): BelongsTo
+    {
+        return $this->belongsTo(Server::class);
+    }
+
     /** @return string[] */
     public static function allPossibleEvents(): array
     {
@@ -100,16 +112,101 @@ class WebhookConfiguration extends Model
             ->all();
     }
 
+    /** @return string[] */
+    public static function allPossibleServerEvents(): array
+    {
+        $events = [
+            'server:file.read',
+            'server:file.write',
+            'server:file.rename',
+            'server:file.copy',
+            'server:file.compress',
+            'server:file.decompress',
+            'server:file.delete',
+            'server:file.create-directory',
+            'server:file.uploaded',
+            'server:file.pull',
+            'server:file.download',
+
+            'server:power.start',
+            'server:power.stop',
+            'server:power.restart',
+            'server:power.kill',
+
+            'server:console.command',
+
+            'server:startup.edit',
+            'server:startup.image',
+            'server:settings.rename',
+            'server:settings.description',
+            'server:settings.reinstall',
+
+            'server:allocation.notes',
+            'server:allocation.primary',
+            'server:allocation.create',
+            'server:allocation.delete',
+
+            'server:schedule.create',
+            'server:schedule.update',
+            'server:schedule.execute',
+            'server:schedule.delete',
+
+            'server:task.create',
+            'server:task.update',
+            'server:task.delete',
+
+            'server:backup.start',
+            'server:backup.delete',
+            'server:backup.download',
+            'server:backup.rename',
+            'server:backup.restore',
+            'server:backup.restore-complete',
+            'server:backup.restore-failed',
+
+            'server:database.create',
+            'server:database.rotate-password',
+            'server:database.delete',
+
+            'server:subuser.create',
+            'server:subuser.update',
+            'server:subuser.delete',
+
+            'server:sftp.denied',
+        ];
+
+        Event::dispatch('server:webhook.events', [&$events]);
+
+        return array_unique($events);
+    }
+
     /** @return array<string, string> */
-    public static function filamentCheckboxList(): array
+    public static function filamentCheckboxList(WebhookScope $scope = WebhookScope::GLOBAL): array
+    
     {
         $list = [];
-        $events = static::allPossibleEvents();
-        foreach ($events as $event) {
-            $list[$event] = static::transformClassName($event);
+        
+        if ($scope === WebhookScope::SERVER) {
+            $events = static::allPossibleServerEvents();
+            foreach ($events as $event) {
+                $list[$event] = static::transformServerEventName($event);
+            }
+        } else {
+            $events = static::allPossibleEvents();
+            foreach ($events as $event) {
+                $list[$event] = static::transformClassName($event);
+            }
         }
 
         return $list;
+    }
+
+    public static function transformServerEventName(string $event): string
+    {
+        return str($event)
+            ->after('server:')
+            ->replace('.', ' → ')
+            ->title()
+            ->toString();
     }
 
     public static function transformClassName(string $event): string
@@ -189,8 +286,13 @@ class WebhookConfiguration extends Model
     /** @param array<mixed, mixed> $eventData */
     public function run(?string $eventName = null, ?array $eventData = null): void
     {
-        $eventName ??= 'eloquent.created: '.Server::class;
-        $eventData ??= static::getWebhookSampleData();
+        if ($this->scope === WebhookScope::SERVER) {
+            $eventName ??= 'server:file.write';
+            $eventData ??= WebhookService::getServerWebhookSampleData();
+        } else {
+            $eventName ??= 'eloquent.created: '.Server::class;
+            $eventData ??= static::getWebhookSampleData();
+        }
 
         ProcessWebhook::dispatch($this, $eventName, [$eventData]);
     }

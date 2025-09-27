@@ -2,13 +2,14 @@
 
 namespace App\Filament\Server\Resources\ServerWebhooks;
 
+use App\Enums\WebhookScope;
 use App\Enums\WebhookType;
 use App\Filament\Server\Resources\ServerWebhooks\Pages\CreateServerWebhook;
 use App\Filament\Server\Resources\ServerWebhooks\Pages\EditServerWebhook;
 use App\Filament\Server\Resources\ServerWebhooks\Pages\ListServerWebhooks;
 use App\Filament\Server\Resources\ServerWebhooks\Pages\ViewServerWebhook;
 use App\Livewire\AlertBanner;
-use App\Models\ServerWebhook;
+use App\Models\WebhookConfiguration;
 use App\Traits\Filament\CanCustomizePages;
 use App\Traits\Filament\CanCustomizeRelations;
 use App\Traits\Filament\CanModifyForm;
@@ -51,7 +52,7 @@ class ServerWebhookResource extends Resource
     use CanModifyTable;
     use HandlesEvents;
 
-    protected static ?string $model = ServerWebhook::class;
+    protected static ?string $model = WebhookConfiguration::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'tabler-webhook';
     protected static ?int $navigationSort = 11;
@@ -101,15 +102,13 @@ class ServerWebhookResource extends Resource
             ])
             ->recordActions([
                 ViewAction::make()
-                    ->hidden(fn (ServerWebhook $record) => static::canEdit($record)),
+                    ->hidden(fn (WebhookConfiguration $record) => static::canEdit($record)),
                 EditAction::make(),
                 ReplicateAction::make()
                     ->iconButton()
                     ->tooltip(trans('filament-actions::replicate.single.label'))
                     ->modal(false)
-                    ->excludeAttributes(['created_at', 'updated_at'])
-                    ->beforeReplicaSaved(fn (ServerWebhook $replica) => $replica->description .= ' Copy ' . now()->format('Y-m-d H:i:s'))
-                    ->successRedirectUrl(fn (ServerWebhook $replica) => EditServerWebhook::getUrl(['record' => $replica])),
+                    ->excludeAttributes(['created_at', 'updated_at']),
             ])
             ->groupedBulkActions([
                 DeleteBulkAction::make(),
@@ -170,7 +169,7 @@ class ServerWebhookResource extends Resource
                     ->schema([
                         CheckboxList::make('events')
                             ->live()
-                            ->options(fn () => ServerWebhook::filamentCheckboxList())
+                            ->options(fn () => WebhookConfiguration::filamentCheckboxList(WebhookScope::SERVER))
                             ->searchable()
                             ->bulkToggleable()
                             ->columns(3)

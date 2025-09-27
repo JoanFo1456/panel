@@ -6,6 +6,7 @@ use App\Contracts\Validatable;
 use App\Enums\ContainerStatus;
 use App\Enums\ServerResourceType;
 use App\Enums\ServerState;
+use App\Enums\WebhookScope;
 use App\Exceptions\Http\Server\ServerStateConflictException;
 use App\Repositories\Daemon\DaemonServerRepository;
 use App\Services\Subusers\SubuserDeletionService;
@@ -371,11 +372,12 @@ class Server extends Model implements Validatable
     }
 
     /**
-     * @return HasMany<ServerWebhook, $this>
+     * @return HasMany<WebhookConfiguration, $this>
      */
     public function serverWebhooks(): HasMany
     {
-        return $this->hasMany(ServerWebhook::class, 'server_id', 'id');
+        return $this->hasMany(WebhookConfiguration::class, 'server_id', 'id')
+            ->where('scope', WebhookScope::SERVER);
     }
 
     /**
