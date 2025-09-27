@@ -9,6 +9,7 @@ use App\Filament\Server\Resources\ServerWebhooks\Pages\EditServerWebhook;
 use App\Filament\Server\Resources\ServerWebhooks\Pages\ListServerWebhooks;
 use App\Filament\Server\Resources\ServerWebhooks\Pages\ViewServerWebhook;
 use App\Livewire\AlertBanner;
+use App\Models\Server;
 use App\Models\WebhookConfiguration;
 use App\Traits\Filament\CanCustomizePages;
 use App\Traits\Filament\CanCustomizeRelations;
@@ -55,6 +56,7 @@ class ServerWebhookResource extends Resource
     protected static ?string $model = WebhookConfiguration::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'tabler-webhook';
+
     protected static ?int $navigationSort = 11;
 
     protected static ?string $recordTitleAttribute = 'description';
@@ -78,12 +80,13 @@ class ServerWebhookResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        /** @var \App\Models\Server $server */
+        /** @var \App\Models\Server|null $server */
         $server = Filament::getTenant();
-        if (!$server) {
+        if (!$server instanceof Server) {
             return null;
         }
         $count = static::getModel()::where('server_id', $server->id)->count();
+
         return $count > 0 ? (string) $count : null;
     }
 
@@ -161,6 +164,7 @@ class ServerWebhookResource extends Resource
                     ->hidden(fn (Get $get) => $get('type') === WebhookType::Regular)
                     ->afterStateUpdated(fn (Livewire $livewire) => $livewire->dispatch('refresh-widget'))
                     ->schema(fn () => self::getDiscordFields())
+                    /** @phpstan-ignore-next-line */
                     ->view('filament.server.components.webhooksection')
                     ->aside()
                     ->formBefore()

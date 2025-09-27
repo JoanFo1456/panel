@@ -11,7 +11,8 @@ use App\Services\WebhookService;
 class DispatchWebhooks
 {
     /**
-     * Handle both eloquent events and activity logged events.
+     *
+     * @param array<string, mixed> $data
      */
     public function handle(string|ActivityLogged $event, array $data = []): void
     {
@@ -22,42 +23,39 @@ class DispatchWebhooks
         }
     }
 
-    /**
-     * Handle ActivityLogged events for server webhooks.
-     */
     protected function handleActivityLogged(ActivityLogged $activityLogged): void
     {
         $eventName = $activityLogged->model->event;
-        
+
         if (!$activityLogged->isServerEvent()) {
             return;
         }
 
-        // Get the server from the activity log
         $server = null;
-        if ($activityLogged->model->subject_type === Server::class) {
-            $server = $activityLogged->model->subject;
+        $firstSubject = $activityLogged->model->subjects->first();
+        if ($firstSubject && $firstSubject->subject_type === Server::class) {
+            $server = $firstSubject->subject;
         } elseif (isset($activityLogged->model->properties['server'])) {
             $server = Server::find($activityLogged->model->properties['server']['id'] ?? null);
         }
 
-        if (!$server) {
+        if (!$server instanceof Server) {
             return;
         }
 
-        // Get server webhooks that listen for this event
         $serverWebhooks = $server->serverWebhooks()
             ->whereJsonContains('events', $eventName)
             ->get();
 
         foreach ($serverWebhooks as $webhook) {
             WebhookService::dispatch($eventName, $activityLogged->model->properties?->toArray() ?? [], $server);
-            break; // WebhookService::dispatch handles all webhooks for the event
+            break; 
         }
     }
 
     /**
-     * Handle eloquent events for global webhooks.
+     *
+     * @param array<string, mixed> $data
      */
     protected function handleEloquentEvent(string $eventName, array $data): void
     {

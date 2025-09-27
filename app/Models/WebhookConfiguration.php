@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\WebhookScope;
 use App\Enums\WebhookType;
 use App\Jobs\ProcessWebhook;
+use App\Services\WebhookService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Livewire\Features\SupportEvents\HandlesEvents;
-use \App\Services\WebhookService;
+
 /**
  * @property string|array<string, mixed>|null $payload
  * @property string $endpoint
@@ -181,10 +182,9 @@ class WebhookConfiguration extends Model
 
     /** @return array<string, string> */
     public static function filamentCheckboxList(WebhookScope $scope = WebhookScope::GLOBAL): array
-    
     {
         $list = [];
-        
+
         if ($scope === WebhookScope::SERVER) {
             $events = static::allPossibleServerEvents();
             foreach ($events as $event) {
@@ -286,7 +286,7 @@ class WebhookConfiguration extends Model
     /** @param array<mixed, mixed> $eventData */
     public function run(?string $eventName = null, ?array $eventData = null): void
     {
-        if ($this->scope === WebhookScope::SERVER) {
+        if (WebhookScope::from($this->scope) === WebhookScope::SERVER) {
             $eventName ??= 'server:file.write';
             $eventData ??= WebhookService::getServerWebhookSampleData();
         } else {

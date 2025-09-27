@@ -42,7 +42,6 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Collection;
 use Livewire\Component as Livewire;
 use Livewire\Features\SupportEvents\HandlesEvents;
 
@@ -89,6 +88,7 @@ class WebhookResource extends Resource
     {
         return $table
             ->columns([
+
                 IconColumn::make('type'),
                 TextColumn::make('server.name')
                     ->label('Server')
@@ -117,13 +117,7 @@ class WebhookResource extends Resource
                     ->successRedirectUrl(fn (WebhookConfiguration $replica) => EditWebhookConfiguration::getUrl(['record' => $replica])),
             ])
             ->groupedBulkActions([
-                DeleteBulkAction::make()
-                    ->requiresConfirmation()
-                    ->modalHeading('Delete Webhooks')
-                    ->modalDescription('Are you sure you want to delete these webhooks?')
-                    ->action(function (Collection $records) {
-                        $records->each->delete();
-                    }),
+                DeleteBulkAction::make(),
             ])
             ->emptyStateIcon('tabler-webhook')
             ->emptyStateDescription('')
@@ -193,20 +187,20 @@ class WebhookResource extends Resource
                             ->live()
                             ->options(function (Get $get, ?WebhookConfiguration $record) {
                                 if ($record) {
-                                    return WebhookConfiguration::filamentCheckboxList($record->scope);
+                                    return WebhookConfiguration::filamentCheckboxList(WebhookScope::from($record->scope));
                                 }
-                                
+
                                 $activeTab = request()->get('activeTab');
                                 $serverId = $get('server_id');
                                 $scope = ($activeTab === 'server-webhooks' || $serverId) ? WebhookScope::SERVER : WebhookScope::GLOBAL;
+
                                 return WebhookConfiguration::filamentCheckboxList($scope);
                             })
                             ->searchable()
                             ->bulkToggleable()
                             ->columns(3)
                             ->columnSpanFull()
-                            ->required()
-                            ->in(fn (CheckboxList $component): array => array_keys($component->getEnabledOptions())),
+                            ->required(),
                     ]),
             ]);
     }

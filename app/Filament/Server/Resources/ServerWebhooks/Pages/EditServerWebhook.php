@@ -2,7 +2,6 @@
 
 namespace App\Filament\Server\Resources\ServerWebhooks\Pages;
 
-use App\Enums\WebhookType;
 use App\Filament\Server\Resources\ServerWebhooks\ServerWebhookResource;
 use App\Models\WebhookConfiguration;
 use App\Traits\Filament\CanCustomizeHeaderActions;

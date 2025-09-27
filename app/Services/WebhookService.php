@@ -6,16 +6,15 @@ use App\Enums\WebhookScope;
 use App\Jobs\ProcessWebhook;
 use App\Models\Server;
 use App\Models\WebhookConfiguration;
-use Illuminate\Support\Facades\Http;
 
 class WebhookService
 {
     /**
-     * Dispatch webhooks for a specific event.
+     *
+     * @param array<string, mixed> $contextualData
      */
     public static function dispatch(string $eventName, array $contextualData, ?Server $server = null): void
     {
-        // Handle server-scoped webhooks
         if ($server) {
             $serverWebhooks = $server->serverWebhooks()
                 ->whereJsonContains('events', $eventName)
@@ -26,7 +25,6 @@ class WebhookService
             }
         }
 
-        // Handle global webhooks
         $globalWebhooks = WebhookConfiguration::query()
             ->where('scope', WebhookScope::GLOBAL)
             ->whereJsonContains('events', $eventName)
@@ -38,7 +36,8 @@ class WebhookService
     }
 
     /**
-     * Get all possible events for a given scope.
+     *
+     * @return array<string, string>
      */
     public static function getAllEvents(WebhookScope $scope = WebhookScope::GLOBAL): array
     {
@@ -46,7 +45,8 @@ class WebhookService
     }
 
     /**
-     * Get sample data for testing server webhooks.
+     *
+     * @return array<string, mixed>
      */
     public static function getServerWebhookSampleData(): array
     {

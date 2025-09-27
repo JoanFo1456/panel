@@ -37,13 +37,13 @@ class CreateWebhookConfiguration extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $activeTab = request()->get('activeTab');
-        if ($activeTab === 'server-webhooks' && isset($data['server_id']) && $data['server_id']) {
+        if ($activeTab === 'server-webhooks' && isset($data['server_id'])) {
             $data['scope'] = WebhookScope::SERVER;
         } else {
             $data['scope'] = WebhookScope::GLOBAL;
-            unset($data['server_id']); 
+            unset($data['server_id']);
         }
-        
+
         if (($data['type'] ?? null) === WebhookType::Discord->value) {
             $embeds = data_get($data, 'embeds', []);
 

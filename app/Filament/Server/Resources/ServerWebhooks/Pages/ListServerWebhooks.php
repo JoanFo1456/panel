@@ -26,6 +26,7 @@ class ListServerWebhooks extends ListRecords
                 ->hidden(function () {
                     /** @var \App\Models\Server $server */
                     $server = Filament::getTenant();
+
                     return $server->serverWebhooks()->count() <= 0;
                 }),
         ];
