@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\Servers\RelationManagers\AllocationsRelationMan
 use App\Filament\Admin\Resources\Servers\RelationManagers\DatabasesRelationManager;
 use App\Filament\Admin\Resources\Servers\ServerResource;
 use App\Filament\Components\Actions\PreviewStartupAction;
+use App\Filament\Components\Forms\Fields\AffixedInput;
 use App\Filament\Components\Forms\Fields\StartupVariable;
 use App\Filament\Components\StateCasts\ServerConditionStateCast;
 use App\Filament\Server\Pages\Console;
@@ -256,18 +257,39 @@ class EditServer extends EditRecord
                                                     ])
                                                     ->columnSpan(2),
 
-                                                Slider::make('cpu')
-                                                    ->dehydratedWhenHidden()
-                                                    ->range(0, fn () => $this->getRecord()->node->systemInformation()['cpu_count'] * 100)
-                                                    ->step(50)
-                                                    ->hidden(fn (Get $get) => $get('unlimited_cpu'))
-                                                    ->label(trans('admin/server.cpu_limit'))->inlineLabel()
-                                                    ->required()
-                                                    ->tooltips(RawJs::make(<<<'JS'
-                                                    `${$value.toFixed(0)}%`
-                                                    JS))
-                                                    ->behavior([Behavior::Tap, Behavior::Drag, Behavior::SmoothSteps])
-                                                    ->columnSpan(2),
+                                                AffixedInput::make('cpu')
+                                                    ->label(trans('admin/server.cpu_text'))
+                                                    ->rightComponent(
+                                                        TextInput::make('cpu')
+                                                            ->hiddenLabel(true)
+                                                            ->placeholder('CPU value')
+                                                            ->numeric()
+                                                            ->minValue(0)
+                                                            ->maxValue(fn () => $this->getRecord()->node->systemInformation()['cpu_count'] * 100)
+                                                            ->suffix('%')
+                                                            ->columnSpan(1)
+                                                            ->reactive()
+                                                            ->afterStateUpdated(fn ($state, Set $set) => $set('cpu', $state))
+                                                    )
+                                                    ->leftComponent(
+                                                        Slider::make('cpu')
+                                                            ->hiddenLabel(true)
+                                                            ->dehydratedWhenHidden()
+                                                            ->range(0, fn () => $this->getRecord()->node->systemInformation()['cpu_count'] * 100)
+                                                            ->step(50)
+                                                            ->hidden(fn (Get $get) => $get('unlimited_cpu'))
+                                                            ->required()
+                                                            ->tooltips(RawJs::make(<<<'JS'
+                                                            `${$value.toFixed(0)}%`
+                                                            JS))
+                                                            ->behavior([Behavior::Tap, Behavior::Drag, Behavior::SmoothSteps])
+                                                            ->columnSpan(1)
+                                                            ->reactive()
+                                                            ->afterStateUpdated(fn ($state, Set $set) => $set('cpu', $state) )
+                                                    )
+                                                    ->componentGap('gap-2')
+                                                    ->alignment('items-center')
+
                                             ]),
                                         Grid::make()
                                             ->columns(4)
