@@ -258,14 +258,8 @@ class EditServer extends EditRecord
 
                                                 Slider::make('cpu')
                                                     ->dehydratedWhenHidden()
-                                                    ->range(0, function () {
-                                                        $server = $this->getRecord();
-                                                        $systemInfo = $server->node->systemInformation();
-
-                                                        return $systemInfo['cpu_count'] * 100;
-                                                    })
-                                                    ->tooltips()
-                                                    ->step(10)
+                                                    ->range(0, fn () => $this->getRecord()->node->systemInformation()['cpu_count'] * 100)
+                                                    ->step(50)
                                                     ->hidden(fn (Get $get) => $get('unlimited_cpu'))
                                                     ->label(trans('admin/server.cpu_limit'))->inlineLabel()
                                                     ->required()
@@ -299,8 +293,7 @@ class EditServer extends EditRecord
                                                 Slider::make('memory')
                                                     ->dehydratedWhenHidden()
                                                     ->range(0, function () {
-                                                        $server = $this->getRecord();
-                                                        $systemInfo = $server->node->statistics();
+                                                        $systemInfo = $this->getRecord()->node->statistics();
                                                         $useBinaryPrefix = config('panel.use_binary_prefix');
                                                         if ($useBinaryPrefix == true) {
                                                             $total = $systemInfo['memory_total'] / 1024 / 1024;
@@ -310,8 +303,7 @@ class EditServer extends EditRecord
 
                                                         return (int) $total;
                                                     })
-                                                    ->tooltips()
-                                                    ->step(128)
+                                                    ->step(512)
                                                     ->hidden(fn (Get $get) => $get('unlimited_mem'))
                                                     ->label(trans('admin/server.memory_limit'))->inlineLabel()
                                                     ->hintIcon('tabler-question-mark', trans('admin/server.memory_helper'))
@@ -347,8 +339,7 @@ class EditServer extends EditRecord
                                                 Slider::make('disk')
                                                     ->dehydratedWhenHidden()
                                                     ->range(0, function () {
-                                                        $server = $this->getRecord();
-                                                        $systemInfo = $server->node->statistics();
+                                                        $systemInfo = $this->getRecord()->node->statistics();
                                                         $useBinaryPrefix = config('panel.use_binary_prefix');
 
                                                         if ($useBinaryPrefix == true) {
@@ -359,7 +350,6 @@ class EditServer extends EditRecord
 
                                                         return (int) $total;
                                                     })
-                                                    ->tooltips()
                                                     ->step(128)
                                                     ->hidden(fn (Get $get) => $get('unlimited_disk'))
                                                     ->label(trans('admin/server.disk_limit'))->inlineLabel()
