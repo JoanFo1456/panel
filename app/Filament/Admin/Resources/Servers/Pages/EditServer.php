@@ -33,6 +33,8 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Slider;
+use Filament\Forms\Components\Slider\Enums\Behavior;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -51,6 +53,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
+use Filament\Support\RawJs;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Arr;
@@ -253,15 +256,24 @@ class EditServer extends EditRecord
                                                     ])
                                                     ->columnSpan(2),
 
-                                                TextInput::make('cpu')
+                                                Slider::make('cpu')
                                                     ->dehydratedWhenHidden()
+                                                    ->range(0, function () {
+                                                        $server = $this->getRecord();
+                                                        $systemInfo = $server->node->systemInformation();
+
+                                                        return $systemInfo['cpu_count'] * 100;
+                                                    })
+                                                    ->tooltips()
+                                                    ->step(10)
                                                     ->hidden(fn (Get $get) => $get('unlimited_cpu'))
                                                     ->label(trans('admin/server.cpu_limit'))->inlineLabel()
-                                                    ->suffix('%')
                                                     ->required()
-                                                    ->columnSpan(2)
-                                                    ->numeric()
-                                                    ->minValue(0),
+                                                    ->tooltips(RawJs::make(<<<'JS'
+                                                    `${$value.toFixed(0)}%`
+                                                    JS))
+                                                    ->behavior([Behavior::Tap, Behavior::Drag, Behavior::SmoothSteps])
+                                                    ->columnSpan(2),
                                             ]),
                                         Grid::make()
                                             ->columns(4)
@@ -284,16 +296,31 @@ class EditServer extends EditRecord
                                                     ])
                                                     ->columnSpan(2),
 
-                                                TextInput::make('memory')
+                                                Slider::make('memory')
                                                     ->dehydratedWhenHidden()
+                                                    ->range(0, function () {
+                                                        $server = $this->getRecord();
+                                                        $systemInfo = $server->node->statistics();
+                                                        $useBinaryPrefix = config('panel.use_binary_prefix');
+                                                        if ($useBinaryPrefix == true) {
+                                                            $total = $systemInfo['memory_total'] / 1024 / 1024;
+                                                        } else {
+                                                            $total = $systemInfo['memory_total'] / 1000 / 1000;
+                                                        }
+
+                                                        return (int) $total;
+                                                    })
+                                                    ->tooltips()
+                                                    ->step(128)
                                                     ->hidden(fn (Get $get) => $get('unlimited_mem'))
                                                     ->label(trans('admin/server.memory_limit'))->inlineLabel()
-                                                    ->suffix(config('panel.use_binary_prefix') ? 'MiB' : 'MB')
                                                     ->hintIcon('tabler-question-mark', trans('admin/server.memory_helper'))
                                                     ->required()
-                                                    ->columnSpan(2)
-                                                    ->numeric()
-                                                    ->minValue(0),
+                                                    ->tooltips(RawJs::make(
+                                                        '`${$value.toFixed(0)} ' . (config('panel.use_binary_prefix') ? 'MiB' : 'MB') . '`'
+                                                    ))
+                                                    ->behavior([Behavior::Tap, Behavior::Drag, Behavior::SmoothSteps])
+                                                    ->columnSpan(2),
                                             ]),
 
                                         Grid::make()
@@ -317,15 +344,31 @@ class EditServer extends EditRecord
                                                     ])
                                                     ->columnSpan(2),
 
-                                                TextInput::make('disk')
+                                                Slider::make('disk')
                                                     ->dehydratedWhenHidden()
+                                                    ->range(0, function () {
+                                                        $server = $this->getRecord();
+                                                        $systemInfo = $server->node->statistics();
+                                                        $useBinaryPrefix = config('panel.use_binary_prefix');
+
+                                                        if ($useBinaryPrefix == true) {
+                                                            $total = $systemInfo['memory_total'] / 1024 / 1024;
+                                                        } else {
+                                                            $total = $systemInfo['memory_total'] / 1000 / 1000;
+                                                        }
+
+                                                        return (int) $total;
+                                                    })
+                                                    ->tooltips()
+                                                    ->step(128)
                                                     ->hidden(fn (Get $get) => $get('unlimited_disk'))
                                                     ->label(trans('admin/server.disk_limit'))->inlineLabel()
-                                                    ->suffix(config('panel.use_binary_prefix') ? 'MiB' : 'MB')
                                                     ->required()
-                                                    ->columnSpan(2)
-                                                    ->numeric()
-                                                    ->minValue(0),
+                                                    ->tooltips(RawJs::make(
+                                                        '`${$value.toFixed(0)} ' . (config('panel.use_binary_prefix') ? 'MiB' : 'MB') . '`'
+                                                    ))
+                                                    ->behavior([Behavior::Tap, Behavior::Drag, Behavior::SmoothSteps])
+                                                    ->columnSpan(2),
                                             ]),
                                     ]),
 
