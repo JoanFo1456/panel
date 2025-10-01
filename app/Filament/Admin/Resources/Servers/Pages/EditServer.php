@@ -232,7 +232,6 @@ class EditServer extends EditRecord
                                     ->columns(1)
                                     ->schema([
                                 AffixedInput::make('cpu')
-                                    ->size([20, 20])
                                     ->label(trans('admin/server.cpu'))
                                     ->hintIcon('tabler-question-mark')
                                     ->hintIconTooltip('100% = 1 thread')
