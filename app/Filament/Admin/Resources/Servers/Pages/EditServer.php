@@ -229,159 +229,116 @@ class EditServer extends EditRecord
                             ->schema([
                                 Fieldset::make(trans('admin/server.resource_limits'))
                                     ->columnSpanFull()
-                                    ->columns([
-                                        'default' => 1,
-                                        'sm' => 2,
-                                        'md' => 3,
-                                        'lg' => 3,
-                                    ])
+                                    ->columns(1)
                                     ->schema([
-                                        Grid::make()
-                                            ->columns(4)
-                                            ->columnSpanFull()
-                                            ->schema([
-                                                ToggleButtons::make('unlimited_cpu')
-                                                    ->dehydrated()
-                                                    ->label(trans('admin/server.cpu'))->inlineLabel()->inline()
-                                                    ->afterStateUpdated(fn (Set $set) => $set('cpu', 0))
-                                                    ->formatStateUsing(fn (Get $get) => $get('cpu') == 0)
-                                                    ->live()
-                                                    ->stateCast(new BooleanStateCast(false, true))
-                                                    ->options([
-                                                        1 => trans('admin/server.unlimited'),
-                                                        0 => trans('admin/server.limited'),
-                                                    ])
-                                                    ->colors([
-                                                        1 => 'primary',
-                                                        0 => 'warning',
-                                                    ])
-                                                    ->columnSpan(2),
+                                AffixedInput::make('cpu')
+                                    ->size([20, 20])
+                                    ->label(trans('admin/server.cpu'))
+                                    ->hintIcon('tabler-question-mark')
+                                    ->hintIconTooltip('100% = 1 thread')
+                                    ->leftComponent(
+                                        Slider::make('cpu')
+                                            ->hiddenLabel()
+                                            ->decimalPlaces(0)
+                                            ->range(0, fn () => $this->getRecord()->node->systemInformation()['cpu_count'] * 100)
+                                            ->required()
+                                            ->tooltips(RawJs::make(<<<'JS'
+                                                `${$value.toFixed(0)}%`
+                                            JS))
+                                            ->behavior([Behavior::Tap, Behavior::Drag])
+                                            ->reactive()
+                                            ->afterStateUpdated(fn ($state, Set $set) => $set('cpu', $state))
+                                    )
+                                    ->rightComponent(
+                                        TextInput::make('cpu')
+                                            ->hiddenLabel()
+                                            ->placeholder('CPU value')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->maxValue(fn () => $this->getRecord()->node->systemInformation()['cpu_count'] * 100)
+                                            ->suffix('%')
+                                            ->reactive()
+                                            ->afterStateUpdated(fn ($state, Set $set) => $set('cpu', $state))
+                                    )
+                                    ->componentGap('gap-2')
+                                    ->alignment('items-center'),
+                                AffixedInput::make('memory')
+                                    ->label(trans('admin/server.memory_limit'))
+                                    ->hintIcon('tabler-question-mark')
+                                    ->hintIconTooltip('0 = unlimited')
+                                    ->leftComponent(
+                                        Slider::make('memory')
+                                            ->hiddenLabel()
+                                            ->decimalPlaces(0)
+                                            ->range(0, function () {
+                                                $systemInfo = $this->getRecord()->node->statistics();
+                                                $useBinaryPrefix = config('panel.use_binary_prefix');
+                                                if ($useBinaryPrefix == true) {
+                                                    $total = $systemInfo['memory_total'] / 1024 / 1024;
+                                                } else {
+                                                    $total = $systemInfo['memory_total'] / 1000 / 1000;
+                                                }
+                                                return (int) $total;
+                                            })
+                                            ->required()
+                                            ->tooltips(RawJs::make(
+                                                '`${$value.toFixed(0)} ' . (config('panel.use_binary_prefix') ? 'MiB' : 'MB') . '`'
+                                            ))
+                                            ->behavior([Behavior::Tap, Behavior::Drag])
+                                            ->reactive()
+                                            ->afterStateUpdated(fn ($state, Set $set) => $set('memory', $state))
+                                    )
+                                    ->rightComponent(
+                                        TextInput::make('memory')
+                                            ->hiddenLabel()
+                                            ->placeholder('RAM value')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->suffix(config('panel.use_binary_prefix') ? 'MiB' : 'MB')
+                                            ->reactive()
+                                            ->afterStateUpdated(fn ($state, Set $set) => $set('memory', $state))
+                                    )
+                                    ->componentGap('gap-2')
+                                    ->alignment('items-center'),
 
-                                                AffixedInput::make('cpu')
-                                                    ->label(trans('admin/server.cpu_text'))
-                                                    ->rightComponent(
-                                                        TextInput::make('cpu')
-                                                            ->hiddenLabel(true)
-                                                            ->placeholder('CPU value')
-                                                            ->numeric()
-                                                            ->minValue(0)
-                                                            ->maxValue(fn () => $this->getRecord()->node->systemInformation()['cpu_count'] * 100)
-                                                            ->suffix('%')
-                                                            ->columnSpan(1)
-                                                            ->reactive()
-                                                            ->afterStateUpdated(fn ($state, Set $set) => $set('cpu', $state))
-                                                    )
-                                                    ->leftComponent(
-                                                        Slider::make('cpu')
-                                                            ->hiddenLabel(true)
-                                                            ->dehydratedWhenHidden()
-                                                            ->range(0, fn () => $this->getRecord()->node->systemInformation()['cpu_count'] * 100)
-                                                            ->step(50)
-                                                            ->hidden(fn (Get $get) => $get('unlimited_cpu'))
-                                                            ->required()
-                                                            ->tooltips(RawJs::make(<<<'JS'
-                                                            `${$value.toFixed(0)}%`
-                                                            JS))
-                                                            ->behavior([Behavior::Tap, Behavior::Drag, Behavior::SmoothSteps])
-                                                            ->columnSpan(1)
-                                                            ->reactive()
-                                                            ->afterStateUpdated(fn ($state, Set $set) => $set('cpu', $state) )
-                                                    )
-                                                    ->componentGap('gap-2')
-                                                    ->alignment('items-center')
-
-                                            ]),
-                                        Grid::make()
-                                            ->columns(4)
-                                            ->columnSpanFull()
-                                            ->schema([
-                                                ToggleButtons::make('unlimited_mem')
-                                                    ->dehydrated()
-                                                    ->label(trans('admin/server.memory'))->inlineLabel()->inline()
-                                                    ->afterStateUpdated(fn (Set $set) => $set('memory', 0))
-                                                    ->formatStateUsing(fn (Get $get) => $get('memory') == 0)
-                                                    ->live()
-                                                    ->stateCast(new BooleanStateCast(false, true))
-                                                    ->options([
-                                                        1 => trans('admin/server.unlimited'),
-                                                        0 => trans('admin/server.limited'),
-                                                    ])
-                                                    ->colors([
-                                                        1 => 'primary',
-                                                        0 => 'warning',
-                                                    ])
-                                                    ->columnSpan(2),
-
-                                                Slider::make('memory')
-                                                    ->dehydratedWhenHidden()
-                                                    ->range(0, function () {
-                                                        $systemInfo = $this->getRecord()->node->statistics();
-                                                        $useBinaryPrefix = config('panel.use_binary_prefix');
-                                                        if ($useBinaryPrefix == true) {
-                                                            $total = $systemInfo['memory_total'] / 1024 / 1024;
-                                                        } else {
-                                                            $total = $systemInfo['memory_total'] / 1000 / 1000;
-                                                        }
-
-                                                        return (int) $total;
-                                                    })
-                                                    ->step(512)
-                                                    ->hidden(fn (Get $get) => $get('unlimited_mem'))
-                                                    ->label(trans('admin/server.memory_limit'))->inlineLabel()
-                                                    ->hintIcon('tabler-question-mark', trans('admin/server.memory_helper'))
-                                                    ->required()
-                                                    ->tooltips(RawJs::make(
-                                                        '`${$value.toFixed(0)} ' . (config('panel.use_binary_prefix') ? 'MiB' : 'MB') . '`'
-                                                    ))
-                                                    ->behavior([Behavior::Tap, Behavior::Drag, Behavior::SmoothSteps])
-                                                    ->columnSpan(2),
-                                            ]),
-
-                                        Grid::make()
-                                            ->columns(4)
-                                            ->columnSpanFull()
-                                            ->schema([
-                                                ToggleButtons::make('unlimited_disk')
-                                                    ->dehydrated()
-                                                    ->label(trans('admin/server.disk'))->inlineLabel()->inline()
-                                                    ->live()
-                                                    ->afterStateUpdated(fn (Set $set) => $set('disk', 0))
-                                                    ->formatStateUsing(fn (Get $get) => $get('disk') == 0)
-                                                    ->stateCast(new BooleanStateCast(false, true))
-                                                    ->options([
-                                                        1 => trans('admin/server.unlimited'),
-                                                        0 => trans('admin/server.limited'),
-                                                    ])
-                                                    ->colors([
-                                                        1 => 'primary',
-                                                        0 => 'warning',
-                                                    ])
-                                                    ->columnSpan(2),
-
-                                                Slider::make('disk')
-                                                    ->dehydratedWhenHidden()
-                                                    ->range(0, function () {
-                                                        $systemInfo = $this->getRecord()->node->statistics();
-                                                        $useBinaryPrefix = config('panel.use_binary_prefix');
-
-                                                        if ($useBinaryPrefix == true) {
-                                                            $total = $systemInfo['memory_total'] / 1024 / 1024;
-                                                        } else {
-                                                            $total = $systemInfo['memory_total'] / 1000 / 1000;
-                                                        }
-
-                                                        return (int) $total;
-                                                    })
-                                                    ->step(128)
-                                                    ->hidden(fn (Get $get) => $get('unlimited_disk'))
-                                                    ->label(trans('admin/server.disk_limit'))->inlineLabel()
-                                                    ->required()
-                                                    ->tooltips(RawJs::make(
-                                                        '`${$value.toFixed(0)} ' . (config('panel.use_binary_prefix') ? 'MiB' : 'MB') . '`'
-                                                    ))
-                                                    ->behavior([Behavior::Tap, Behavior::Drag, Behavior::SmoothSteps])
-                                                    ->columnSpan(2),
-                                            ]),
+                                AffixedInput::make('disk')
+                                    ->label(trans('admin/server.disk_limit'))
+                                    ->hintIcon('tabler-question-mark')
+                                    ->hintIconTooltip('0 = unlimited')
+                                    ->leftComponent(
+                                        Slider::make('disk')
+                                            ->hiddenLabel()
+                                            ->decimalPlaces(0)
+                                            ->range(0, function () {
+                                                $systemInfo = $this->getRecord()->node->statistics();
+                                                $useBinaryPrefix = config('panel.use_binary_prefix');
+                                                if ($useBinaryPrefix == true) {
+                                                    $total = $systemInfo['memory_total'] / 1024 / 1024;
+                                                } else {
+                                                    $total = $systemInfo['memory_total'] / 1000 / 1000;
+                                                }
+                                                return (int) $total;
+                                            })
+                                            ->required()
+                                            ->tooltips(RawJs::make(
+                                                '`${$value.toFixed(0)} ' . (config('panel.use_binary_prefix') ? 'MiB' : 'MB') . '`'
+                                            ))
+                                            ->behavior([Behavior::Tap, Behavior::Drag])
+                                            ->reactive()
+                                            ->afterStateUpdated(fn ($state, Set $set) => $set('disk', $state))
+                                    )
+                                    ->rightComponent(
+                                        TextInput::make('disk')
+                                            ->hiddenLabel()
+                                            ->placeholder('Disk value')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->suffix(config('panel.use_binary_prefix') ? 'MiB' : 'MB')
+                                            ->reactive()
+                                            ->afterStateUpdated(fn ($state, Set $set) => $set('disk', $state))
+                                    )
+                                    ->componentGap('gap-2')
+                                    ->alignment('items-center'),
                                     ]),
 
                                 Fieldset::make(trans('admin/server.advanced_limits'))

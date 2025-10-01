@@ -3,28 +3,27 @@
     $rightComponent = $getRightComponent();
     $gap = $getComponentGap();
     $alignment = $getAlignment();
+    $size = $getSize();
 @endphp
 
 <x-dynamic-component
     :component="$getFieldWrapperView()"
     :field="$field"
 >
-    <x-slot name="label">
-        {{ $getLabel() }}
-    </x-slot>
-
-    @if ($leftComponent || $rightComponent)
-        <div class="flex items-center {{ $gap }} w-full">
-            @if ($leftComponent)
-                <div class="flex-1 min-w-0 self-center">
-                    {{ $leftComponent->container($getContainer()) }}
-                </div>
-            @endif
-            @if ($rightComponent)
-                <div class="flex-1 min-w-0 self-center">
-                    {{ $rightComponent->container($getContainer()) }}
-                </div>
-            @endif
-        </div>
-    @endif
+    <div class="space-y-2">
+        @if ($leftComponent || $rightComponent)
+            <div class="flex {{ $alignment }} {{ $gap }} w-full">
+                @if ($leftComponent)
+                    <div style="flex: 0 0 {{ $size[0] }}%">
+                        {{ $leftComponent->container($getContainer()) }}
+                    </div>
+                @endif
+                @if ($rightComponent)
+                    <div style="flex: 0 0 {{ $size[1] }}%">
+                        {{ $rightComponent->container($getContainer()) }}
+                    </div>
+                @endif
+            </div>
+        @endif
+    </div>
 </x-dynamic-component>

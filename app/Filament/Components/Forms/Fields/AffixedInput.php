@@ -21,6 +21,8 @@ class AffixedInput extends Field
 
     protected string|Closure|null $alignment = 'items-center';
 
+    protected array|Closure|null $size = [50, 50];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -56,6 +58,19 @@ class AffixedInput extends Field
         return $this;
     }
 
+    public function size(int|array|Closure $leftSize, int $rightSize = null): static
+    {
+        if (is_array($leftSize)) {
+            $this->size = $leftSize;
+        } elseif ($rightSize !== null) {
+            $this->size = [$leftSize, $rightSize];
+        } else {
+            $this->size = [$leftSize, $leftSize];
+        }
+
+        return $this;
+    }
+
     public function getLeftComponent(): ?Field
     {
         return $this->evaluate($this->leftComponent);
@@ -74,6 +89,11 @@ class AffixedInput extends Field
     public function getAlignment(): string
     {
         return $this->evaluate($this->alignment) ?? 'items-center';
+    }
+
+    public function getSize(): array
+    {
+        return $this->evaluate($this->size) ?? [50, 50];
     }
 
     protected function getChildComponentsForForm(): array
