@@ -233,10 +233,10 @@ class EditServer extends EditRecord
                                     ->schema([
                                 AffixedInput::make('cpu')
                                     ->label(trans('admin/server.cpu'))
-                                    ->hintIcon('tabler-question-mark')
-                                    ->hintIconTooltip('100% = 1 thread')
+                                    ->size([60, 20])
                                     ->leftComponent(
                                         Slider::make('cpu')
+                                            ->fillTrack()
                                             ->hiddenLabel()
                                             ->decimalPlaces(0)
                                             ->range(0, fn () => $this->getRecord()->node->systemInformation()['cpu_count'] * 100)
@@ -263,11 +263,11 @@ class EditServer extends EditRecord
                                     ->alignment('items-center'),
                                 AffixedInput::make('memory')
                                     ->label(trans('admin/server.memory_limit'))
-                                    ->hintIcon('tabler-question-mark')
-                                    ->hintIconTooltip('0 = unlimited')
+                                    ->size([60, 20])
                                     ->leftComponent(
                                         Slider::make('memory')
                                             ->hiddenLabel()
+                                            ->fillTrack()
                                             ->decimalPlaces(0)
                                             ->range(0, function () {
                                                 $systemInfo = $this->getRecord()->node->statistics();
@@ -297,16 +297,19 @@ class EditServer extends EditRecord
                                             ->reactive()
                                             ->afterStateUpdated(fn ($state, Set $set) => $set('memory', $state))
                                     )
+                                    ->hintIcon('tabler-question-mark')
+                                    ->hintIconTooltip(trans('admin/server.memory_helper'))
+                                    ->hintIconColor('info')
                                     ->componentGap('gap-2')
                                     ->alignment('items-center'),
 
                                 AffixedInput::make('disk')
                                     ->label(trans('admin/server.disk_limit'))
-                                    ->hintIcon('tabler-question-mark')
-                                    ->hintIconTooltip('0 = unlimited')
+                                    ->size([60, 20])
                                     ->leftComponent(
                                         Slider::make('disk')
                                             ->hiddenLabel()
+                                            ->fillTrack()
                                             ->decimalPlaces(0)
                                             ->range(0, function () {
                                                 $systemInfo = $this->getRecord()->node->statistics();

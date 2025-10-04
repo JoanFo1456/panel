@@ -23,6 +23,8 @@ class AffixedInput extends Field
 
     protected array|Closure|null $size = [50, 50];
 
+    protected string|Closure|null $hintIconColor = 'primary';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -94,6 +96,37 @@ class AffixedInput extends Field
     public function getSize(): array
     {
         return $this->evaluate($this->size) ?? [50, 50];
+    }
+
+    public function hintIconColor(string|Closure|null $color): static
+    {
+        $this->hintIconColor = $color;
+
+        return $this;
+    }
+
+    public function getHintIconColor(): string
+    {
+        return $this->evaluate($this->hintIconColor) ?? 'primary';
+    }
+
+    public function getHintIcon(): ?string
+    {
+        if ($this->getLeftComponent() || $this->getRightComponent()) {
+            return null;
+        }
+        
+        return parent::getHintIcon();
+    }
+
+    public function getHintIconTooltip(): ?string
+    {
+        return parent::getHintIconTooltip();
+    }
+
+    public function getOriginalHintIcon(): ?string
+    {
+        return parent::getHintIcon();
     }
 
     protected function getChildComponentsForForm(): array
