@@ -21,6 +21,7 @@ class AffixedInput extends Field
 
     protected string|Closure|null $alignment = 'items-center';
 
+    /** @var array<int, int>|Closure|null */
     protected array|Closure|null $size = [50, 50];
 
     protected string|Closure|null $hintIconColor = 'primary';
@@ -60,6 +61,10 @@ class AffixedInput extends Field
         return $this;
     }
 
+    /**
+     * @param int|array<int, int>|Closure $leftSize
+     * @param int|null $rightSize
+     */
     public function size(int|array|Closure $leftSize, int $rightSize = null): static
     {
         if (is_array($leftSize)) {
@@ -93,6 +98,9 @@ class AffixedInput extends Field
         return $this->evaluate($this->alignment) ?? 'items-center';
     }
 
+    /**
+     * @return array<int, int>
+     */
     public function getSize(): array
     {
         return $this->evaluate($this->size) ?? [50, 50];
@@ -129,6 +137,9 @@ class AffixedInput extends Field
         return parent::getHintIcon();
     }
 
+    /**
+     * @return array<Field>
+     */
     protected function getChildComponentsForForm(): array
     {
         $components = [];

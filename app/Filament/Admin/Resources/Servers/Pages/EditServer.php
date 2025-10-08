@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\Servers\RelationManagers\DatabasesRelationManag
 use App\Filament\Admin\Resources\Servers\ServerResource;
 use App\Filament\Components\Actions\PreviewStartupAction;
 use App\Filament\Components\Forms\Fields\AffixedInput;
+use App\Filament\Components\Forms\Fields\CompactSlider;
 use App\Filament\Components\Forms\Fields\StartupVariable;
 use App\Filament\Components\StateCasts\ServerConditionStateCast;
 use App\Filament\Server\Pages\Console;
@@ -34,7 +35,6 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Slider;
 use Filament\Forms\Components\Slider\Enums\Behavior;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
@@ -62,6 +62,9 @@ use Illuminate\Support\HtmlString;
 use LogicException;
 use Random\RandomException;
 
+/**
+ * @method Server getRecord()
+ */
 class EditServer extends EditRecord
 {
     use CanCustomizeHeaderActions;
@@ -235,7 +238,7 @@ class EditServer extends EditRecord
                                     ->label(trans('admin/server.cpu'))
                                     ->size([60, 20])
                                     ->leftComponent(
-                                        Slider::make('cpu')
+                                        CompactSlider::make('cpu')
                                             ->fillTrack()
                                             ->hiddenLabel()
                                             ->decimalPlaces(0)
@@ -265,7 +268,7 @@ class EditServer extends EditRecord
                                     ->label(trans('admin/server.memory_limit'))
                                     ->size([60, 20])
                                     ->leftComponent(
-                                        Slider::make('memory')
+                                        CompactSlider::make('memory')
                                             ->hiddenLabel()
                                             ->fillTrack()
                                             ->decimalPlaces(0)
@@ -307,7 +310,7 @@ class EditServer extends EditRecord
                                     ->label(trans('admin/server.disk_limit'))
                                     ->size([60, 20])
                                     ->leftComponent(
-                                        Slider::make('disk')
+                                        CompactSlider::make('disk')
                                             ->hiddenLabel()
                                             ->fillTrack()
                                             ->decimalPlaces(0)
