@@ -187,7 +187,7 @@ class WebhookResource extends Resource
                             ->live()
                             ->options(function (Get $get, ?WebhookConfiguration $record) {
                                 if ($record) {
-                                    return WebhookConfiguration::filamentCheckboxList(WebhookScope::from($record->scope));
+                                    return WebhookConfiguration::filamentCheckboxList($record->scope);
                                 }
 
                                 $activeTab = request()->get('activeTab');
