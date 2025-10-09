@@ -10,16 +10,17 @@ return new class extends Migration
     public function up()
     {
         $authenticatableClass = Config::getAuthenticatableModel();
-
         $authenticatableTableName = (new $authenticatableClass)->getTable();
 
-        Schema::create('passkeys', function (Blueprint $table) use ($authenticatableTableName,$authenticatableClass) {
+        Schema::create('passkeys', function (Blueprint $table) use ($authenticatableTableName) {
             $table->id();
 
-            $table
-                ->foreignIdFor($authenticatableClass, 'authenticatable_id')
-                ->constrained(table: $authenticatableTableName, indexName: 'passkeys_authenticatable_fk')
-                ->cascadeOnDelete();
+            // match users.id (int unsigned)
+            $table->unsignedInteger('authenticatable_id');
+            $table->foreign('authenticatable_id', 'passkeys_authenticatable_fk')
+                  ->references('id')
+                  ->on($authenticatableTableName)
+                  ->cascadeOnDelete();
 
             $table->text('name');
             $table->text('credential_id');
