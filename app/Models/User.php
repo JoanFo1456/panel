@@ -42,7 +42,8 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\In;
 use ResourceBundle;
 use Spatie\Permission\Traits\HasRoles;
-
+use Spatie\LaravelPasskeys\Models\Concerns\HasPasskeys;
+use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
 /**
  * App\Models\User.
  *
@@ -91,8 +92,9 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static Builder|User whereUsername($value)
  * @method static Builder|User whereUuid($value)
  */
-class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasAvatar, HasEmailAuthentication, HasName, HasTenants, Validatable
+class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasAvatar, HasEmailAuthentication, HasName, HasTenants, Validatable, HasPasskeys
 {
+    use HasFactory, Notifiable, InteractsWithPasskeys;
     use Authenticatable;
     use Authorizable { can as protected canned; }
     use CanResetPassword;

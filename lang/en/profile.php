@@ -10,6 +10,7 @@ return [
         'ssh_keys' => 'SSH Keys',
         'keys' => 'Keys',
         '2fa' => '2FA',
+        'passkeys' => 'Passkeys',
         'customization' => 'Customization',
     ],
     'username' => 'Username',
@@ -66,4 +67,6 @@ return [
     'no_oauth' => 'No Accounts Linked',
     'no_api_keys' => 'No API Keys',
     'no_ssh_keys' => 'No SSH Keys',
+    'passkeys' => 'Passkeys',
+    'passkeys_description' => 'Manage your passkeys for secure, passwordless authentication.',
 ];

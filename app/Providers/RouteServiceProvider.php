@@ -36,6 +36,8 @@ class RouteServiceProvider extends ServiceProvider
                     ->group(base_path('routes/base.php'));
 
                 Route::middleware('guest')->prefix('/auth')->group(base_path('routes/auth.php'));
+                Route::passkeys();
+
             });
 
             Route::middleware(['api'])->group(function () {

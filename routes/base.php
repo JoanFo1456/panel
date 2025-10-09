@@ -5,3 +5,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('installer', PanelInstaller::class)->name('installer')
     ->withoutMiddleware(['auth']);
+
