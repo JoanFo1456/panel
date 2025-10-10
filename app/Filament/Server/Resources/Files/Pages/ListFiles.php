@@ -54,10 +54,19 @@ class ListFiles extends ListRecords
 
     protected static string $resource = FileResource::class;
 
+    protected string $view = 'filament.server.pages.list-files';
+
     #[Locked]
     public string $path = '/';
 
     private DaemonFileRepository $fileRepository;
+
+    public function getMaxUploadSize(): int
+    {
+        /** @var Server $server */
+        $server = Filament::getTenant();
+        return (int) round($server->node->upload_size * (config('panel.use_binary_prefix') ? 1.048576 * 1024 : 1000));
+    }
 
     public function getTitle(): string
     {
@@ -606,6 +615,36 @@ class ListFiles extends ListRecords
         $this->fileRepository ??= (new DaemonFileRepository())->setServer($server);
 
         return $this->fileRepository;
+    }
+
+    public function showFileTooLargeNotification(string $fileName, float $maxSizeMB): void
+    {
+        Notification::make()
+            ->title("File '{$fileName}' is too large")
+            ->body("Maximum upload size is {$maxSizeMB} MB")
+            ->danger()
+            ->send();
+    }
+
+    public function handleFileUpload(array $files): void
+    {
+        /** @var Server $server */
+        $server = Filament::getTenant();
+        
+        if (!user()?->can(Permission::ACTION_FILE_CREATE, $server)) {
+            return;
+        }
+
+        foreach ($files as $fileData) {
+            $this->getDaemonFileRepository()->putContent(join_paths($this->path, $fileData['name']), base64_decode($fileData['content']));
+
+            Activity::event('server:file.uploaded')
+                ->property('directory', $this->path)
+                ->property('file', $fileData['name'])
+                ->log();
+        }
+        
+        $this->refreshPage();
     }
 
     public static function route(string $path): PageRegistration
