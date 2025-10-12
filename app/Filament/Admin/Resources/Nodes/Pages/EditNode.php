@@ -35,6 +35,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\HtmlString;
+use Illuminate\Validation\ValidationException;
 use Phiki\Grammar\Grammar;
 use Throwable;
 
@@ -48,6 +49,8 @@ class EditNode extends EditRecord
     private DaemonConfigurationRepository $daemonConfigurationRepository;
 
     private NodeUpdateService $nodeUpdateService;
+
+    private bool $errored = false;
 
     public function boot(DaemonConfigurationRepository $daemonConfigurationRepository, NodeUpdateService $nodeUpdateService): void
     {
@@ -124,9 +127,12 @@ class EditNode extends EditRecord
                                 ->columnSpan(2)
                                 ->required()
                                 ->autofocus()
-                                ->live(debounce: 1500)
+                                ->live(onBlur: true)
                                 ->rules(Node::getRulesForField('fqdn'))
                                 ->prohibited(fn ($state) => is_ip($state) && request()->isSecure())
+                                ->validationMessages([
+                                    '*' => fn ($state) => is_ip($state)  && request()->isSecure() ? trans('validation.fqdn') : trans('validation.ip'),
+                                ])
                                 ->label(fn ($state) => is_ip($state) ? trans('admin/node.ip_address') : trans('admin/node.domain'))
                                 ->placeholder(fn ($state) => is_ip($state) ? '192.168.1.1' : 'node.example.com')
                                 ->helperText(function ($state) {
@@ -670,10 +676,16 @@ class EditNode extends EditRecord
         return $data;
     }
 
+    protected function onValidationError(ValidationException $exception): void
+    {
+        $this->errored = true;
+    }
+
     protected function afterSave(): void
     {
-        $this->fillForm();
-
+        if ($this->errored) {
+            return;
+        }
         /** @var Node $node */
         $node = $this->record;
 

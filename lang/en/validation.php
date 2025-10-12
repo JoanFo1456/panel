@@ -45,7 +45,8 @@ return [
 
     'in_array' => 'The :attribute field does not exist in :other.',
     'integer' => 'The :attribute must be an integer.',
-    'ip' => 'The :attribute must be a valid IP address.',
+    'ip' => 'This must be a valid IP address.',
+    'fqdn' => 'This must be a valid Fully-Qualified DomainName.',
     'json' => 'The :attribute must be a valid JSON string.',
     'max' => [
         'numeric' => 'The :attribute may not be greater than :max.',
