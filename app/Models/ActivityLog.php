@@ -138,9 +138,6 @@ class ActivityLog extends Model implements HasIcon, HasLabel
             $model->timestamp = Carbon::now();
         });
 
-        static::created(function (self $model) {
-            Event::dispatch(new ActivityLogged($model));
-        });
     }
 
     public function getIcon(): string

@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Enums\WebhookScope;
 use App\Events\ActivityLogged;
+use App\Jobs\ProcessWebhook;
 use App\Models\Server;
 use App\Models\WebhookConfiguration;
 use App\Services\WebhookService;
@@ -26,6 +27,7 @@ class DispatchWebhooks
     protected function handleActivityLogged(ActivityLogged $activityLogged): void
     {
         $eventName = $activityLogged->model->event;
+        
 
         if (!$activityLogged->isServerEvent()) {
             return;
@@ -33,7 +35,7 @@ class DispatchWebhooks
 
         $server = null;
         $firstSubject = $activityLogged->model->subjects->first();
-        if ($firstSubject && $firstSubject->subject_type === Server::class) {
+        if ($firstSubject && $firstSubject->subject_type === (new Server())->getMorphClass()) {
             $server = $firstSubject->subject;
         } elseif (isset($activityLogged->model->properties['server'])) {
             $server = Server::find($activityLogged->model->properties['server']['id'] ?? null);
@@ -43,13 +45,13 @@ class DispatchWebhooks
             return;
         }
 
+        // Only dispatch to server webhooks, not global ones (global webhooks are handled separately)
         $serverWebhooks = $server->serverWebhooks()
             ->whereJsonContains('events', $eventName)
             ->get();
 
         foreach ($serverWebhooks as $webhook) {
             WebhookService::dispatch($eventName, $activityLogged->model->properties?->toArray() ?? [], $server);
-            break; 
         }
     }
 

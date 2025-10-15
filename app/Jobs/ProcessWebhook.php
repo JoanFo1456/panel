@@ -34,7 +34,12 @@ class ProcessWebhook implements ShouldQueue
             $data = reset($data);
         }
 
-        $data = Arr::wrap(json_decode($data, true) ?? []);
+        // Handle both JSON string and array data
+        if (is_string($data)) {
+            $data = Arr::wrap(json_decode($data, true) ?? []);
+        } else {
+            $data = Arr::wrap($data);
+        }
         $data['event'] = $this->webhookConfiguration->transformClassName($this->eventName);
 
         if ($this->webhookConfiguration->type === WebhookType::Discord) {

@@ -4,7 +4,6 @@ namespace App\Filament\Widgets;
 
 use App\Enums\WebhookScope;
 use App\Models\WebhookConfiguration;
-use App\Services\WebhookService;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Carbon;
 
@@ -53,7 +52,7 @@ class DiscordPreview extends Widget
         $this->payload = json_encode($this->record->payload);
 
         $sampleData = WebhookScope::from($this->record->scope) === WebhookScope::SERVER
-            ? WebhookService::getServerWebhookSampleData()
+            ? WebhookConfiguration::getServerWebhookSampleData()
             : WebhookConfiguration::getWebhookSampleData();
 
         $replacedPayload = $this->record->replaceVars($sampleData, $this->payload);

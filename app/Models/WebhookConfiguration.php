@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\WebhookScope;
 use App\Enums\WebhookType;
 use App\Jobs\ProcessWebhook;
-use App\Services\WebhookService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -286,9 +285,9 @@ class WebhookConfiguration extends Model
     /** @param array<mixed, mixed> $eventData */
     public function run(?string $eventName = null, ?array $eventData = null): void
     {
-        if (WebhookScope::from($this->scope) === WebhookScope::SERVER) {
+        if ($this->scope === WebhookScope::SERVER) {
             $eventName ??= 'server:file.write';
-            $eventData ??= WebhookService::getServerWebhookSampleData();
+            $eventData ??= WebhookConfiguration::getServerWebhookSampleData();
         } else {
             $eventName ??= 'eloquent.created: '.Server::class;
             $eventData ??= static::getWebhookSampleData();
@@ -495,6 +494,31 @@ class WebhookConfiguration extends Model
                 ],
             ],
             'event' => 'updated: Server',
+        ];
+    }
+    /**
+     *
+     * @return array<string, mixed>
+     */
+    public static function getServerWebhookSampleData(): array
+    {
+        return [
+            'user' => [
+                'uuid' => '12345678-1234-5678-9012-123456789012',
+                'username' => 'admin',
+                'email' => 'admin@example.com',
+                'image' => 'https://www.gravatar.com/avatar/default',
+                'admin' => true,
+                'language' => 'en',
+                'created_at' => '2025-06-01T12:31:50.000000Z',
+                'updated_at' => '2025-06-01T12:31:50.000000Z',
+            ],
+            'server' => [
+                'uuid' => '87654321-4321-8765-2109-876543210987',
+                'name' => 'Example Server',
+                'node' => 'node1.example.com',
+                'description' => 'Sample Minecraft server',
+            ],
         ];
     }
 }
