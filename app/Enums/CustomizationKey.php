@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Enums;
-
+use App\Enums\NavigationType;
 enum CustomizationKey: string
 {
     case ConsoleRows = 'console_rows';
@@ -11,7 +11,7 @@ enum CustomizationKey: string
     case DashboardLayout = 'dashboard_layout';
     case NavigationType = 'navigation_type';
 
-    public function getDefaultValue(): string|int|bool
+    public function getDefaultValue(): string|int
     {
         return match ($this) {
             self::ConsoleRows => 30,
@@ -19,7 +19,7 @@ enum CustomizationKey: string
             self::ConsoleFontSize => 14,
             self::ConsoleGraphPeriod => 30,
             self::DashboardLayout => 'grid',
-            self::NavigationType => 'side'
+            self::NavigationType => NavigationType::Side->value,
         };
     }
 

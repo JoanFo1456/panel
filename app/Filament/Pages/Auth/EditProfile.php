@@ -34,7 +34,6 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\StateCasts\BooleanStateCast;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
@@ -49,7 +48,7 @@ use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Socialite\Facades\Socialite;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
-
+use App\Enums\NavigationType;
 /**
  * @method User getUser()
  */
@@ -442,12 +441,12 @@ class EditProfile extends BaseEditProfile
                                             ->label(trans('profile.navigation'))
                                             ->inline()
                                             ->options([
-                                                'top' => trans('profile.top'),
-                                                'side' => trans('profile.side'),
-                                                'mixed' => trans('profile.mixed'),
+                                                NavigationType::Top->value => trans('profile.top'),
+                                                NavigationType::Side->value => trans('profile.side'),
+                                                NavigationType::Mixed->value => trans('profile.mixed'),
                                             ])
                                             ->required()
-                                            ->default('side'),
+                                            ->default(NavigationType::Side->value),
                                     ]),
                                 Section::make(trans('profile.console'))
                                     ->collapsible()
@@ -570,7 +569,7 @@ class EditProfile extends BaseEditProfile
             'console_rows' => $data['console_rows'],
             'console_graph_period' => $data['console_graph_period'],
             'dashboard_layout' => $data['dashboard_layout'],
-            'navigation_type' => $data['navigation_type'],
+            'navigation_type' => NavigationType::from($data['navigation_type']),
         ];
 
         unset($data['console_font'],$data['console_font_size'], $data['console_rows'], $data['dashboard_layout'], $data['top_navigation'], $data['navigation_type']);
@@ -587,7 +586,7 @@ class EditProfile extends BaseEditProfile
         $data['console_rows'] = (int) $this->getUser()->getCustomization(CustomizationKey::ConsoleRows);
         $data['console_graph_period'] = (int) $this->getUser()->getCustomization(CustomizationKey::ConsoleGraphPeriod);
         $data['dashboard_layout'] = $this->getUser()->getCustomization(CustomizationKey::DashboardLayout);
-    $data['navigation_type'] = $this->getUser()->getCustomization(CustomizationKey::NavigationType) ?? 'side';
+        $data['navigation_type'] = $this->getUser()->getCustomization(CustomizationKey::NavigationType);
 
         return $data;
     }
