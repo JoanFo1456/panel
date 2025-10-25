@@ -438,14 +438,16 @@ class EditProfile extends BaseEditProfile
                                                 'grid' => trans('profile.grid'),
                                                 'table' => trans('profile.table'),
                                             ]),
-                                        ToggleButtons::make('top_navigation')
+                                        ToggleButtons::make('navigation_type')
                                             ->label(trans('profile.navigation'))
                                             ->inline()
                                             ->options([
-                                                1 => trans('profile.top'),
-                                                0 => trans('profile.side'),
+                                                'top' => trans('profile.top'),
+                                                'side' => trans('profile.side'),
+                                                'mixed' => trans('profile.mixed'),
                                             ])
-                                            ->stateCast(new BooleanStateCast(false, true)),
+                                            ->required()
+                                            ->default('side'),
                                     ]),
                                 Section::make(trans('profile.console'))
                                     ->collapsible()
@@ -568,10 +570,10 @@ class EditProfile extends BaseEditProfile
             'console_rows' => $data['console_rows'],
             'console_graph_period' => $data['console_graph_period'],
             'dashboard_layout' => $data['dashboard_layout'],
-            'top_navigation' => $data['top_navigation'],
+            'navigation_type' => $data['navigation_type'],
         ];
 
-        unset($data['console_font'],$data['console_font_size'], $data['console_rows'], $data['dashboard_layout'], $data['top_navigation']);
+        unset($data['console_font'],$data['console_font_size'], $data['console_rows'], $data['dashboard_layout'], $data['top_navigation'], $data['navigation_type']);
 
         $data['customization'] = json_encode($customization);
 
@@ -585,7 +587,7 @@ class EditProfile extends BaseEditProfile
         $data['console_rows'] = (int) $this->getUser()->getCustomization(CustomizationKey::ConsoleRows);
         $data['console_graph_period'] = (int) $this->getUser()->getCustomization(CustomizationKey::ConsoleGraphPeriod);
         $data['dashboard_layout'] = $this->getUser()->getCustomization(CustomizationKey::DashboardLayout);
-        $data['top_navigation'] = (bool) $this->getUser()->getCustomization(CustomizationKey::TopNavigation);
+    $data['navigation_type'] = $this->getUser()->getCustomization(CustomizationKey::NavigationType) ?? 'side';
 
         return $data;
     }

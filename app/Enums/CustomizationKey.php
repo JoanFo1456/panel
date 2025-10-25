@@ -8,8 +8,8 @@ enum CustomizationKey: string
     case ConsoleFont = 'console_font';
     case ConsoleFontSize = 'console_font_size';
     case ConsoleGraphPeriod = 'console_graph_period';
-    case TopNavigation = 'top_navigation';
     case DashboardLayout = 'dashboard_layout';
+    case NavigationType = 'navigation_type';
 
     public function getDefaultValue(): string|int|bool
     {
@@ -18,8 +18,8 @@ enum CustomizationKey: string
             self::ConsoleFont => 'monospace',
             self::ConsoleFontSize => 14,
             self::ConsoleGraphPeriod => 30,
-            self::TopNavigation => false,
             self::DashboardLayout => 'grid',
+            self::NavigationType => 'side'
         };
     }
 
