@@ -22,13 +22,15 @@ class EditServerWebhook extends EditRecord
     protected function getDefaultHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->icon('tabler-trash'),
             Action::make('test_now')
                 ->label(trans('admin/webhook.test_now'))
                 ->color('primary')
+                ->icon('tabler-send')
                 ->action(fn (WebhookConfiguration $record) => $record->run())
                 ->tooltip(trans('admin/webhook.test_now_help')),
-            $this->getSaveFormAction()->formId('form'),
+            $this->getSaveFormAction()->formId('form')->icon('tabler-device-floppy'),
         ];
     }
 

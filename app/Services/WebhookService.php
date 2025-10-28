@@ -10,8 +10,7 @@ use App\Models\WebhookConfiguration;
 class WebhookService
 {
     /**
-     *
-     * @param array<string, mixed> $contextualData
+     * @param  array<string, mixed>  $contextualData
      */
     public static function dispatch(string $eventName, array $contextualData, ?Server $server = null): void
     {
@@ -36,13 +35,10 @@ class WebhookService
     }
 
     /**
-     *
      * @return array<string, string>
      */
     public static function getAllEvents(WebhookScope $scope = WebhookScope::GLOBAL): array
     {
         return WebhookConfiguration::filamentCheckboxList($scope);
     }
-
-
 }

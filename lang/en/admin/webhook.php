@@ -12,9 +12,12 @@ return [
     'help_text' => 'You have to wrap variable name in between {{ }} for example if you want to get the name from the api you can use {{name}}.',
     'test_now' => 'Test Now',
     'test_now_help' => 'This will fire a `created: Server` event',
+    'name' => 'Name',
+    'server' => 'Server',
+    'information' => 'Information',
+    'payload' => 'Payload',
     'table' => [
         'description' => 'Description',
-        'endpoint' => 'Endpoint',
     ],
     'headers' => 'Headers',
     'events' => 'Events',

@@ -10,6 +10,7 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Enums\IconSize;
 
 class ListServerWebhooks extends ListRecords
 {
@@ -23,6 +24,10 @@ class ListServerWebhooks extends ListRecords
     {
         return [
             CreateAction::make()
+                ->icon('tabler-plus')
+                ->hiddenLabel()
+                ->iconButton()
+                ->iconSize(IconSize::ExtraLarge)
                 ->hidden(function () {
                     /** @var \App\Models\Server $server */
                     $server = Filament::getTenant();

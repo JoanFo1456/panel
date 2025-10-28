@@ -95,13 +95,15 @@ class ServerWebhookResource extends Resource
         return $table
             ->columns([
                 IconColumn::make('type'),
+                TextColumn::make('name')
+                    ->label(trans('admin/webhook.name')),
+                TextColumn::make('description')
+                    ->label(trans('admin/webhook.table.description')),
                 TextColumn::make('endpoint')
-                    ->label(trans('admin/webhook.table.endpoint'))
+                    ->label(trans('admin/webhook.endpoint'))
                     ->formatStateUsing(fn (string $state) => str($state)->after('://'))
                     ->limit(60)
                     ->wrap(),
-                TextColumn::make('description')
-                    ->label(trans('admin/webhook.table.description')),
             ])
             ->recordActions([
                 ViewAction::make()
@@ -139,14 +141,14 @@ class ServerWebhookResource extends Resource
                     ->inline()
                     ->options(WebhookType::class)
                     ->default(WebhookType::Regular),
-                TextInput::make('description')
-                    ->label(trans('admin/webhook.description'))
-                    ->required(),
                 TextInput::make('endpoint')
                     ->label(trans('admin/webhook.endpoint'))
                     ->required()
-                    ->columnSpanFull()
                     ->afterStateUpdated(fn (string $state, Set $set) => $set('type', str($state)->contains('discord.com') ? WebhookType::Discord : WebhookType::Regular)),
+                TextInput::make('description')
+                    ->label(trans('admin/webhook.description'))
+                    ->columnSpanFull()
+                    ->required(),
                 Section::make(trans('admin/webhook.regular'))
                     ->hidden(fn (Get $get) => $get('type') === WebhookType::Discord)
                     ->schema(fn () => self::getRegularFields())
@@ -164,8 +166,7 @@ class ServerWebhookResource extends Resource
                     ->hidden(fn (Get $get) => $get('type') === WebhookType::Regular)
                     ->afterStateUpdated(fn (Livewire $livewire) => $livewire->dispatch('refresh-widget'))
                     ->schema(fn () => self::getDiscordFields())
-                    /** @phpstan-ignore-next-line */
-                    ->view('filament.server.components.webhooksection')
+                    ->view('filament.components.webhooksection')
                     ->aside()
                     ->formBefore()
                     ->columnSpanFull(),

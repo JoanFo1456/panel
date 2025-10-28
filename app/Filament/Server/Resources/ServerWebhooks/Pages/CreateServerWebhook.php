@@ -24,8 +24,8 @@ class CreateServerWebhook extends CreateRecord
     protected function getDefaultHeaderActions(): array
     {
         return [
-            $this->getCancelFormAction()->formId('form'),
-            $this->getCreateFormAction()->formId('form'),
+            $this->getCancelFormAction()->formId('form')->icon('tabler-cancel'),
+            $this->getCreateFormAction()->formId('form')->icon('tabler-plus'),
         ];
     }
 

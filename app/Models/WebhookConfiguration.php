@@ -180,7 +180,7 @@ class WebhookConfiguration extends Model
     }
 
     /** @return array<string, string> */
-    public static function filamentCheckboxList(WebhookScope $scope = WebhookScope::GLOBAL): array
+    public static function filamentCheckboxList(WebhookScope $scope): array
     {
         $list = [];
 
@@ -285,7 +285,7 @@ class WebhookConfiguration extends Model
     /** @param array<mixed, mixed> $eventData */
     public function run(?string $eventName = null, ?array $eventData = null): void
     {
-        if ($this->scope === WebhookScope::SERVER) {
+        if ($this->scope === WebhookScope::SERVER->value) {
             $eventName ??= 'server:file.write';
             $eventData ??= WebhookConfiguration::getServerWebhookSampleData();
         } else {
@@ -496,8 +496,8 @@ class WebhookConfiguration extends Model
             'event' => 'updated: Server',
         ];
     }
+
     /**
-     *
      * @return array<string, mixed>
      */
     public static function getServerWebhookSampleData(): array

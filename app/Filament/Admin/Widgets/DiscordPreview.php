@@ -51,9 +51,7 @@ class DiscordPreview extends Widget
 
         $this->payload = json_encode($this->record->payload);
 
-        $scope = $this->record->scope instanceof WebhookScope
-            ? $this->record->scope
-            : WebhookScope::from($this->record->scope);
+        $scope = WebhookScope::tryFrom($this->record->scope) ?? WebhookScope::from($this->record->scope);
 
         $sampleData = $scope === WebhookScope::SERVER
             ? WebhookConfiguration::getServerWebhookSampleData()
