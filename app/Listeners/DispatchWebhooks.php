@@ -4,7 +4,6 @@ namespace App\Listeners;
 
 use App\Enums\WebhookScope;
 use App\Events\ActivityLogged;
-use App\Jobs\ProcessWebhook;
 use App\Models\Server;
 use App\Models\WebhookConfiguration;
 use App\Services\WebhookService;
@@ -12,8 +11,7 @@ use App\Services\WebhookService;
 class DispatchWebhooks
 {
     /**
-     *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function handle(string|ActivityLogged $event, array $data = []): void
     {
@@ -27,7 +25,6 @@ class DispatchWebhooks
     protected function handleActivityLogged(ActivityLogged $activityLogged): void
     {
         $eventName = $activityLogged->model->event;
-        
 
         if (!$activityLogged->isServerEvent()) {
             return;
@@ -56,8 +53,7 @@ class DispatchWebhooks
     }
 
     /**
-     *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     protected function handleEloquentEvent(string $eventName, array $data): void
     {

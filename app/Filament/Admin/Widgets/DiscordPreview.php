@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Widgets;
+namespace App\Filament\Admin\Widgets;
 
 use App\Enums\WebhookScope;
 use App\Models\WebhookConfiguration;
@@ -41,17 +41,21 @@ class DiscordPreview extends Widget
                 'link' => fn ($href, $child) => $href ? "<a href=\"$href\" target=\"_blank\" class=\"link\">$child</a>" : $child,
                 'content' => null,
                 'sender' => [
-                    'name' => 'Webhook',
-                    'avatar' => 'https://cdn.discordapp.com/embed/avatars/0.png',
+                    'name' => 'Pelican',
+                    'avatar' => 'https://raw.githubusercontent.com/pelican-dev/panel/main/public/pelican.svg',
                 ],
                 'embeds' => [],
-                'getTime' => fn () => now()->format('Y-m-d H:i'),
+                'getTime' => fn () => now()->format('H:i'),
             ];
         }
 
         $this->payload = json_encode($this->record->payload);
 
-        $sampleData = WebhookScope::from($this->record->scope) === WebhookScope::SERVER
+        $scope = $this->record->scope instanceof WebhookScope
+            ? $this->record->scope
+            : WebhookScope::from($this->record->scope);
+
+        $sampleData = $scope === WebhookScope::SERVER
             ? WebhookConfiguration::getServerWebhookSampleData()
             : WebhookConfiguration::getWebhookSampleData();
 
@@ -62,8 +66,8 @@ class DiscordPreview extends Widget
             'link' => fn ($href, $child) => $href ? "<a href=\"$href\" target=\"_blank\" class=\"link\">$child</a>" : $child,
             'content' => data_get($data, 'content'),
             'sender' => [
-                'name' => data_get($data, 'username', 'Webhook'),
-                'avatar' => data_get($data, 'avatar_url', 'https://cdn.discordapp.com/embed/avatars/0.png'),
+                'name' => data_get($data, 'username', 'Pelican'),
+                'avatar' => data_get($data, 'avatar_url', 'https://raw.githubusercontent.com/pelican-dev/panel/main/public/pelican.svg'),
             ],
             'embeds' => collect(data_get($data, 'embeds', []))
                 ->take(10)
@@ -81,7 +85,7 @@ class DiscordPreview extends Widget
                     return $embed;
                 })
                 ->all(),
-            'getTime' => fn () => now()->format('Y-m-d H:i'),
+            'getTime' => fn () => now()->format('H:i'),
         ];
     }
 }

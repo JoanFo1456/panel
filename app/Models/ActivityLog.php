@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Events\ActivityLogged;
 use App\Traits\HasValidation;
 use Carbon\Carbon;
 use Filament\Facades\Filament;

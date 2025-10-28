@@ -128,7 +128,7 @@
                 @if(!data_get($sender, 'human'))
                     <span class="text-white text-xs rounded-md tag">app</span>
                 @endif
-                <span class="timestamp text-xs">{{ $getTime }}</span>
+                <span class="timestamp text-xs">{{ $getTime() }}</span>
             </div>
 
             @if(filled($content))
