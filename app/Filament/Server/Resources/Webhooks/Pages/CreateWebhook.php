@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Server\Resources\ServerWebhooks\Pages;
+namespace App\Filament\Server\Resources\Webhooks\Pages;
 
 use App\Enums\WebhookScope;
-use App\Filament\Server\Resources\ServerWebhooks\ServerWebhookResource;
+use App\Filament\Server\Resources\Webhooks\WebhookResource;
 use App\Traits\Filament\CanCustomizeHeaderActions;
 use App\Traits\Filament\CanCustomizeHeaderWidgets;
 use Filament\Actions\Action;
@@ -11,12 +11,12 @@ use Filament\Actions\ActionGroup;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 
-class CreateServerWebhook extends CreateRecord
+class CreateWebhook extends CreateRecord
 {
     use CanCustomizeHeaderActions;
     use CanCustomizeHeaderWidgets;
 
-    protected static string $resource = ServerWebhookResource::class;
+    protected static string $resource = WebhookResource::class;
 
     protected static bool $canCreateAnother = false;
 
@@ -46,12 +46,12 @@ class CreateServerWebhook extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        return EditServerWebhook::getUrl(['record' => $this->getRecord()]);
+        return EditWebhook::getUrl(['record' => $this->getRecord()]);
     }
 
     public function mount(): void
     {
         parent::mount();
-        ServerWebhookResource::sendHelpBanner();
+        WebhookResource::sendHelpBanner();
     }
 }

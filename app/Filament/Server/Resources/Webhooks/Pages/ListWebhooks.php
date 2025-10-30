@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Server\Resources\ServerWebhooks\Pages;
+namespace App\Filament\Server\Resources\Webhooks\Pages;
 
-use App\Filament\Server\Resources\ServerWebhooks\ServerWebhookResource;
+use App\Filament\Server\Resources\Webhooks\WebhookResource;
 use App\Traits\Filament\CanCustomizeHeaderActions;
 use App\Traits\Filament\CanCustomizeHeaderWidgets;
 use Filament\Actions\Action;
@@ -12,12 +12,12 @@ use Filament\Facades\Filament;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Enums\IconSize;
 
-class ListServerWebhooks extends ListRecords
+class ListWebhooks extends ListRecords
 {
     use CanCustomizeHeaderActions;
     use CanCustomizeHeaderWidgets;
 
-    protected static string $resource = ServerWebhookResource::class;
+    protected static string $resource = WebhookResource::class;
 
     /** @return array<Action|ActionGroup> */
     protected function getDefaultHeaderActions(): array
@@ -32,7 +32,7 @@ class ListServerWebhooks extends ListRecords
                     /** @var \App\Models\Server $server */
                     $server = Filament::getTenant();
 
-                    return $server->serverWebhooks()->count() <= 0;
+                    return $server->webhooks()->count() <= 0;
                 }),
         ];
     }

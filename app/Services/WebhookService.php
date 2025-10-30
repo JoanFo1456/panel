@@ -15,11 +15,11 @@ class WebhookService
     public static function dispatch(string $eventName, array $contextualData, ?Server $server = null): void
     {
         if ($server) {
-            $serverWebhooks = $server->serverWebhooks()
+            $webhooks = $server->webhooks()
                 ->whereJsonContains('events', $eventName)
                 ->get();
 
-            foreach ($serverWebhooks as $webhook) {
+            foreach ($webhooks as $webhook) {
                 ProcessWebhook::dispatch($webhook, $eventName, [$contextualData]);
             }
         }

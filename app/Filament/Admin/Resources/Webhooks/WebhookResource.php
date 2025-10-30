@@ -23,6 +23,7 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -141,6 +142,7 @@ class WebhookResource extends Resource
         return $schema
             ->components([
                 Tabs::make('webhook_tabs')
+                    ->persistTab()
                     ->columnSpanFull()
                     ->tabs([
                         Tab::make(trans('admin/webhook.information'))
@@ -153,7 +155,7 @@ class WebhookResource extends Resource
                                             ->required(),
                                         Select::make('server_id')
                                             ->label(trans('admin/webhook.server'))
-                                            ->options(Server::query()->pluck('name', 'id'))
+                                            ->relationship('server', 'id')
                                             ->preload()
                                             ->disabled(),
                                     ]),
@@ -167,6 +169,8 @@ class WebhookResource extends Resource
                                             ->inline()
                                             ->options(WebhookType::class)
                                             ->default(WebhookType::Regular),
+                                        Hidden::make('scope')
+                                            ->formatStateUsing(fn (Get $get) => $get('server_id') ? WebhookScope::SERVER : WebhookScope::GLOBAL),
                                         TextInput::make('endpoint')
                                             ->label(trans('admin/webhook.endpoint'))
                                             ->required()
@@ -189,12 +193,7 @@ class WebhookResource extends Resource
                                     ->schema([
                                         CheckboxList::make('events')
                                             ->live()
-                                            ->options(function (Get $get) {
-                                                $serverId = $get('server_id');
-                                                $scope = $serverId ? WebhookScope::SERVER : WebhookScope::GLOBAL;
-
-                                                return WebhookConfiguration::filamentCheckboxList($scope);
-                                            })
+                                            ->options(fn (Get $get) => WebhookConfiguration::filamentCheckboxList($get('scope')))
                                             ->searchable()
                                             ->bulkToggleable()
                                             ->columns(3)
@@ -230,6 +229,7 @@ class WebhookResource extends Resource
                 ->schema([
                     Section::make()
                         ->columnSpanFull()
+                        ->poll('15s')
                         ->view('filament.components.webhooksection'),
                     Grid::make()
                         ->columnSpan(8)

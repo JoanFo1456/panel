@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\Webhooks\WebhookResource;
 use App\Models\WebhookConfiguration;
 use App\Traits\Filament\CanCustomizeHeaderActions;
 use App\Traits\Filament\CanCustomizeHeaderWidgets;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -19,7 +20,7 @@ class ListWebhookConfigurations extends ListRecords
 
     protected static string $resource = WebhookResource::class;
 
-    /** @return int<CreateAction> */
+    /** @return array<Action> */
     protected function getHeaderActions(): array
     {
         return [

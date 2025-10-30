@@ -1,29 +1,29 @@
 <?php
 
-namespace App\Filament\Admin\Widgets;
+namespace App\Livewire;
 
 use App\Enums\WebhookScope;
 use App\Models\WebhookConfiguration;
-use Filament\Widgets\Widget;
+use Filament\Schemas\Components\Concerns\CanPoll;
+use Filament\Support\Concerns\EvaluatesClosures;
 use Illuminate\Support\Carbon;
+use Illuminate\View\View;
+use Livewire\Component;
 
-class DiscordPreview extends Widget
+class DiscordPreview extends Component
 {
-    protected string $view = 'filament.admin.widgets.discord-preview';
-
-    /** @var array<string, string> */
-    protected $listeners = [
-        'refresh-widget' => '$refresh',
-    ];
-
-    protected static bool $isDiscovered = false;
-
-    protected int|string|array $columnSpan = 1;
+    use CanPoll;
+    use EvaluatesClosures;
 
     public ?WebhookConfiguration $record = null;
 
     /** @var string|array<string, mixed>|null */
     public string|array|null $payload = null;
+
+    public function render(): View
+    {
+        return view('livewire.discord-preview', $this->getViewData());
+    }
 
     /**
      * @return array{
@@ -51,9 +51,7 @@ class DiscordPreview extends Widget
 
         $this->payload = json_encode($this->record->payload);
 
-        $scope = WebhookScope::tryFrom($this->record->scope) ?? WebhookScope::from($this->record->scope);
-
-        $sampleData = $scope === WebhookScope::SERVER
+        $sampleData = $this->record->scope === WebhookScope::SERVER
             ? WebhookConfiguration::getServerWebhookSampleData()
             : WebhookConfiguration::getWebhookSampleData();
 

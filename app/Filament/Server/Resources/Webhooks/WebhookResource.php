@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Server\Resources\ServerWebhooks;
+namespace App\Filament\Server\Resources\Webhooks;
 
 use App\Enums\WebhookScope;
 use App\Enums\WebhookType;
-use App\Filament\Server\Resources\ServerWebhooks\Pages\CreateServerWebhook;
-use App\Filament\Server\Resources\ServerWebhooks\Pages\EditServerWebhook;
-use App\Filament\Server\Resources\ServerWebhooks\Pages\ListServerWebhooks;
-use App\Filament\Server\Resources\ServerWebhooks\Pages\ViewServerWebhook;
+use App\Filament\Server\Resources\Webhooks\Pages\CreateWebhook;
+use App\Filament\Server\Resources\Webhooks\Pages\EditWebhook;
+use App\Filament\Server\Resources\Webhooks\Pages\ListWebhooks;
+use App\Filament\Server\Resources\Webhooks\Pages\ViewWebhook;
 use App\Livewire\AlertBanner;
 use App\Models\Server;
 use App\Models\WebhookConfiguration;
@@ -45,7 +45,7 @@ use Filament\Tables\Table;
 use Livewire\Component as Livewire;
 use Livewire\Features\SupportEvents\HandlesEvents;
 
-class ServerWebhookResource extends Resource
+class WebhookResource extends Resource
 {
     use CanCustomizePages;
     use CanCustomizeRelations;
@@ -58,8 +58,6 @@ class ServerWebhookResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = 'tabler-webhook';
 
     protected static ?int $navigationSort = 11;
-
-    protected static ?string $recordTitleAttribute = 'description';
 
     protected static ?string $slug = 'webhook';
 
@@ -97,8 +95,6 @@ class ServerWebhookResource extends Resource
                 IconColumn::make('type'),
                 TextColumn::make('name')
                     ->label(trans('admin/webhook.name')),
-                TextColumn::make('description')
-                    ->label(trans('admin/webhook.table.description')),
                 TextColumn::make('endpoint')
                     ->label(trans('admin/webhook.endpoint'))
                     ->formatStateUsing(fn (string $state) => str($state)->after('://'))
@@ -166,6 +162,7 @@ class ServerWebhookResource extends Resource
                     ->hidden(fn (Get $get) => $get('type') === WebhookType::Regular)
                     ->afterStateUpdated(fn (Livewire $livewire) => $livewire->dispatch('refresh-widget'))
                     ->schema(fn () => self::getDiscordFields())
+                    ->poll('15s')
                     ->view('filament.components.webhooksection')
                     ->aside()
                     ->formBefore()
@@ -272,8 +269,8 @@ class ServerWebhookResource extends Resource
                             TextInput::make('title')
                                 ->live(debounce: 500)
                                 ->label(trans('admin/webhook.discord_embed.title'))
-                                ->required(fn (Get $get) => $get('description') === null),
-                            Textarea::make('description')
+                                ->required(fn (Get $get) => $get('name') === null),
+                            Textarea::make('name')
                                 ->live(debounce: 500)
                                 ->label(trans('admin/webhook.discord_embed.body'))
                                 ->required(fn (Get $get) => $get('title') === null),
@@ -350,10 +347,10 @@ class ServerWebhookResource extends Resource
     public static function getDefaultPages(): array
     {
         return [
-            'index' => ListServerWebhooks::route('/'),
-            'create' => CreateServerWebhook::route('/create'),
-            'view' => ViewServerWebhook::route('/{record}'),
-            'edit' => EditServerWebhook::route('/{record}/edit'),
+            'index' => ListWebhooks::route('/'),
+            'create' => CreateWebhook::route('/create'),
+            'view' => ViewWebhook::route('/{record}'),
+            'edit' => EditWebhook::route('/{record}/edit'),
         ];
     }
 }

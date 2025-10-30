@@ -43,11 +43,11 @@ class DispatchWebhooks
         }
 
         // Only dispatch to server webhooks, not global ones (global webhooks are handled separately)
-        $serverWebhooks = $server->serverWebhooks()
+        $webhooks = $server->webhooks()
             ->whereJsonContains('events', $eventName)
             ->get();
 
-        foreach ($serverWebhooks as $webhook) {
+        foreach ($webhooks as $_) {
             WebhookService::dispatch($eventName, $activityLogged->model->properties?->toArray() ?? [], $server);
         }
     }

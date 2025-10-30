@@ -21,7 +21,8 @@ use Livewire\Features\SupportEvents\HandlesEvents;
  * @property string $endpoint
  * @property string $description
  * @property string[] $events
- * @property WebhookType|string|null $type
+ * @property WebhookType $type
+ * @property WebhookScope $scope
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -86,10 +87,10 @@ class WebhookConfiguration extends Model
     private static function updateCache(Collection $eventList): void
     {
         $eventList->each(function (string $event) {
-            cache()->forever("webhooks.$event", WebhookConfiguration::query()->whereJsonContains('events', $event)->get());
+            cache()->forever("webhooks.$event", static::query()->whereJsonContains('events', $event)->get());
         });
 
-        cache()->forever('watchedWebhooks', WebhookConfiguration::pluck('events')->flatten()->unique()->values()->all());
+        cache()->forever('watchedWebhooks', static::pluck('events')->flatten()->unique()->values()->all());
     }
 
     public function webhooks(): HasMany
@@ -285,9 +286,9 @@ class WebhookConfiguration extends Model
     /** @param array<mixed, mixed> $eventData */
     public function run(?string $eventName = null, ?array $eventData = null): void
     {
-        if ($this->scope === WebhookScope::SERVER->value) {
+        if ($this->scope === WebhookScope::SERVER) {
             $eventName ??= 'server:file.write';
-            $eventData ??= WebhookConfiguration::getServerWebhookSampleData();
+            $eventData ??= static::getServerWebhookSampleData();
         } else {
             $eventName ??= 'eloquent.created: '.Server::class;
             $eventData ??= static::getWebhookSampleData();

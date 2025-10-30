@@ -5,7 +5,6 @@ return [
     'model_label' => 'Webhook',
     'model_label_plural' => 'Webhooks',
     'endpoint' => 'Endpoint',
-    'description' => 'Description',
     'events' => 'Events',
     'no_webhooks' => 'No Webhooks',
     'help' => 'Help',
@@ -16,9 +15,6 @@ return [
     'server' => 'Server',
     'information' => 'Information',
     'payload' => 'Payload',
-    'table' => [
-        'description' => 'Description',
-    ],
     'headers' => 'Headers',
     'events' => 'Events',
     'regular' => 'Regular',

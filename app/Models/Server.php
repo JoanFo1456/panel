@@ -386,7 +386,7 @@ class Server extends Model implements Validatable
     /**
      * @return HasMany<WebhookConfiguration, $this>
      */
-    public function serverWebhooks(): HasMany
+    public function webhooks(): HasMany
     {
         return $this->hasMany(WebhookConfiguration::class, 'server_id', 'id')
             ->where('scope', WebhookScope::SERVER);

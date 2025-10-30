@@ -1,4 +1,11 @@
-<x-filament-widgets::widget>
+@php
+    $pollingInterval = $this->getPollingInterval();
+@endphp
+<div :attributes="
+    new \Illuminate\View\ComponentAttributeBag([
+        'wire:poll.' . $pollingInterval => $pollingInterval ? '' : false,
+    ])
+    ">
     @assets
         <style>
             :root {
@@ -217,5 +224,4 @@
             @endforeach
         </div>
     </div>
-    
-</x-filament-widgets::widget>
+</div>
