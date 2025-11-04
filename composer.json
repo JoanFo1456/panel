@@ -9,11 +9,10 @@
         "ext-mbstring": "*",
         "ext-pdo": "*",
         "ext-zip": "*",
-        "achyutn/filament-log-viewer": "^1.4",
         "aws/aws-sdk-php": "^3.356",
         "calebporzio/sushi": "^2.5",
         "dedoc/scramble": "^0.12.10",
-        "filament/filament": "~4.0",
+        "filament/filament": "5.x-dev",
         "guzzlehttp/guzzle": "^7.10",
         "laravel/framework": "^12.31",
         "laravel/helpers": "^1.7",
@@ -24,6 +23,7 @@
         "lcobucci/jwt": "^5.5",
         "league/flysystem-aws-s3-v3": "^3.29",
         "league/flysystem-memory": "^3.29",
+        "livewire/livewire": "^4.0@beta",
         "phiki/phiki": "^2.0",
         "phpseclib/phpseclib": "~3.0.18",
         "predis/predis": "^2.3",
@@ -55,7 +55,6 @@
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^3.7",
         "pestphp/pest-plugin-faker": "^3.0",
-        "pestphp/pest-plugin-livewire": "^3.0",
         "spatie/laravel-ignition": "^2.9"
     },
     "autoload": {
@@ -95,6 +94,6 @@
             "php": "8.2"
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true
 }

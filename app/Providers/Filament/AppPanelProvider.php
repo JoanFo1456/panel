@@ -24,10 +24,10 @@ class AppPanelProvider extends PanelProvider
                     ->icon('tabler-arrow-forward')
                     ->visible(fn () => user()?->canAccessPanel(Filament::getPanel('admin'))),
             ])
-            ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\\Filament\\App\\Resources')
-            ->plugins([
+            ->discoverResources(in: app_path('Filament/App/Resources'), for: 'App\\Filament\\App\\Resources');
+            /*->plugins([
                 FilamentLogViewer::make()
                     ->authorize(false),
-            ]);
+            ]);*/
     }
 }
