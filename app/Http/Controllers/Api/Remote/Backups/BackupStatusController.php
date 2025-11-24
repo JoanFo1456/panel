@@ -72,24 +72,10 @@ class BackupStatusController extends Controller
                 'completed_at' => CarbonImmutable::now(),
             ])->save();
 
-            // Check if we are using the s3 backup adapter. If so, make sure we mark the backup as
-            // being completed in S3 correctly.
-            $backupConfiguration = $model->server->backupConfiguration;
-
-            if (!$backupConfiguration || $backupConfiguration->driver !== 's3') {
-                $nodeS3Config = $model->server->node->backupHosts()->where('driver', 's3')->first();
-                if ($nodeS3Config) {
-                    $backupConfiguration = $nodeS3Config;
-                }
-            }
+            $backupConfiguration = $model->server->node->backupHosts()->where('driver', 's3')->first();
 
             if ($backupConfiguration && $backupConfiguration->driver === 's3') {
-                if (!$backupConfiguration->exists || !$backupConfiguration->config) {
-                    $backupConfiguration = BackupHost::find($backupConfiguration->id);
-                    if (!$backupConfiguration || !$backupConfiguration->config) {
-                        throw new \Exception('Backup configuration is missing config data.');
-                    }
-                }
+                $backupConfiguration = BackupHost::find($backupConfiguration->id);
 
                 $adapter = $this->backupManager->adapterForBackupConfiguration($backupConfiguration);
                 if ($adapter instanceof S3Filesystem) {

@@ -44,18 +44,15 @@ class DownloadLinkService
      */
     protected function getS3BackupUrl(Backup $backup): string
     {
-        $backupConfiguration = $backup->server->backupConfiguration;
-
-        if (!$backupConfiguration) {
-            $backupConfiguration = $backup->server->node->backupHosts()->where('driver', 's3')->first();
+        $backupConfiguration = $backup->server->node->backupHosts()->where('driver', 's3')->first();
 
             if (!$backupConfiguration) {
                 throw new \Exception('No S3 backup configuration available for this server.');
             }
-        }
+        
 
         /** @var S3Filesystem $adapter */
-        $adapter = $this->backupManager->adapterForBackupConfiguration($backupConfiguration);
+        $adapter = $this->backupManager->adapter(Backup::ADAPTER_AWS_S3);
 
         $request = $adapter->getClient()->createPresignedRequest(
             $adapter->getClient()->getCommand('GetObject', [

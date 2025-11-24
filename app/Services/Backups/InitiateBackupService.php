@@ -109,14 +109,10 @@ class InitiateBackupService
         }
 
         return $this->connection->transaction(function () use ($server, $name) {
-            $backupConfiguration = $server->backupConfiguration;
+            $backupConfiguration = $server->node->backupHosts()->where('driver', 's3')->first();
 
             if (!$backupConfiguration) {
-                $backupConfiguration = $server->node->backupHosts()->where('driver', 's3')->first();
-
-                if (!$backupConfiguration) {
-                    throw new \Exception('No S3 backup configuration available for this server.');
-                }
+                throw new \Exception('No S3 backup configuration available for this server.');
             }
 
             $adapterName = $backupConfiguration->driver;

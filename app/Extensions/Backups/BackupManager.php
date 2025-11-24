@@ -57,16 +57,6 @@ class BackupManager
             $config = array_merge($config, $hostConfig);
         }
 
-        if ($driver === 's3') {
-            if (!isset($config['use_path_style_endpoint'])) {
-                $config['use_path_style_endpoint'] = $backupConfiguration->use_path_style_endpoint ?? true;
-            }
-
-            if (!isset($config['region']) || empty($config['region'])) {
-                $config['region'] = 'us-east-1'; // Otherwise it will completely fail.
-            }
-        }
-
         $adapterName = "backup_config_{$backupConfiguration->id}_{$driver}";
 
         return $this->adapters[$adapterName] ??= $this->createAdapter($config);

@@ -380,14 +380,6 @@ class Server extends Model implements HasAvatar, Validatable
         return $this->hasMany(Backup::class);
     }
 
-    /**
-     * @return BelongsTo<BackupHost, $this>
-     */
-    public function backupConfiguration(): BelongsTo
-    {
-        return $this->belongsTo(BackupHost::class, 'backup_host_id');
-    }
-
     public function mounts(): MorphToMany
     {
         return $this->morphToMany(Mount::class, 'mountable');
