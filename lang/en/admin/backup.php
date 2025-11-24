@@ -16,4 +16,6 @@ return [
     's3_endpoint' => 'S3 Endpoint',
     's3_prefix' => 'S3 Prefix',
     'select_backup_config' => 'Select a backup host',
+    'yes' => 'Yes',
+    'no' => 'No',
 ];

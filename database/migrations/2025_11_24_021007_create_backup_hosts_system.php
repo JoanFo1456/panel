@@ -11,7 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Create backup_hosts table
         Schema::create('backup_hosts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -23,7 +22,6 @@ return new class extends Migration
             $table->unique('name');
         });
 
-        // Create backup_host_node pivot table
         Schema::create('backup_host_node', function (Blueprint $table) {
             $table->id();
             $table->foreignId('backup_host_id')->constrained('backup_hosts')->onDelete('cascade');

@@ -9,12 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int $id
  * @property string $name
  * @property string $driver
- * @property array|null $config
+ * @property array<string, mixed>|null $config
  * @property bool $use_path_style_endpoint
  */
 class BackupHost extends Model
 {
     protected $table = 'backup_hosts';
+
     protected $fillable = [
         'name',
         'driver',

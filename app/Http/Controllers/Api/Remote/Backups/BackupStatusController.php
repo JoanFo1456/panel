@@ -77,7 +77,7 @@ class BackupStatusController extends Controller
             $backupConfiguration = $model->server->backupConfiguration;
 
             if (!$backupConfiguration || $backupConfiguration->driver !== 's3') {
-                $nodeS3Config = $model->server->node->backupConfigurations()->where('driver', 's3')->first();
+                $nodeS3Config = $model->server->node->backupHosts()->where('driver', 's3')->first();
                 if ($nodeS3Config) {
                     $backupConfiguration = $nodeS3Config;
                 }

@@ -3,7 +3,6 @@
 namespace App\Services\Backups;
 
 use App\Exceptions\Service\Backup\TooManyBackupsException;
-use App\Extensions\Backups\BackupManager;
 use App\Models\Backup;
 use App\Models\Server;
 use App\Repositories\Daemon\DaemonBackupRepository;
@@ -27,7 +26,6 @@ class InitiateBackupService
         private readonly ConnectionInterface $connection,
         private readonly DaemonBackupRepository $daemonBackupRepository,
         private readonly DeleteBackupService $deleteBackupService,
-        private readonly BackupManager $backupManager
     ) {}
 
     /**
@@ -114,8 +112,8 @@ class InitiateBackupService
             $backupConfiguration = $server->backupConfiguration;
 
             if (!$backupConfiguration) {
-                $backupConfiguration = $server->node->backupConfigurations()->where('driver', 's3')->first();
-                
+                $backupConfiguration = $server->node->backupHosts()->where('driver', 's3')->first();
+
                 if (!$backupConfiguration) {
                     throw new \Exception('No S3 backup configuration available for this server.');
                 }

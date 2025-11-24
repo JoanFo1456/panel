@@ -169,7 +169,6 @@ class Node extends Model implements Validatable
         return $this->belongsToMany(BackupHost::class)->select(['backup_hosts.*']);
     }
 
-
     protected static function booted(): void
     {
         static::creating(function (self $node) {

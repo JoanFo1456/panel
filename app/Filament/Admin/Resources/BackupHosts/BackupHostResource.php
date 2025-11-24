@@ -5,9 +5,7 @@ namespace App\Filament\Admin\Resources\BackupHosts;
 use App\Filament\Admin\Resources\BackupHosts\Pages\CreateBackupHost;
 use App\Filament\Admin\Resources\BackupHosts\Pages\EditBackupHost;
 use App\Filament\Admin\Resources\BackupHosts\Pages\ListBackupHosts;
-use App\Filament\Admin\Resources\BackupHosts\Pages\ViewBackupHost;
 use App\Filament\Admin\Resources\BackupHosts\Schemas\BackupHostForm;
-use App\Filament\Admin\Resources\BackupHosts\Schemas\BackupHostInfolist;
 use App\Filament\Admin\Resources\BackupHosts\Tables\BackupHostsTable;
 use App\Models\BackupHost;
 use BackedEnum;
@@ -34,19 +32,21 @@ class BackupHostResource extends Resource
         return BackupHostForm::configure($schema);
     }
 
-    public static function infolist(Schema $schema): Schema
+    public static function getNavigationBadge(): ?string
     {
-        return BackupHostInfolist::configure($schema);
+        return (string) static::getEloquentQuery()->count() ?: null;
     }
 
     public static function table(Table $table): Table
     {
         return BackupHostsTable::configure($table);
     }
+
     public static function getNavigationGroup(): ?string
     {
         return trans('admin/dashboard.advanced');
     }
+
     public static function getRelations(): array
     {
         return [

@@ -73,7 +73,7 @@ class DeleteBackupService
             $backupConfiguration = $backup->server->backupConfiguration;
 
             if (!$backupConfiguration || $backupConfiguration->driver !== 's3') {
-                $nodeS3Config = $backup->server->node->backupConfigurations()->where('driver', 's3')->first();
+                $nodeS3Config = $backup->server->node->backupHosts()->where('driver', 's3')->first();
                 if ($nodeS3Config) {
                     $backupConfiguration = $nodeS3Config;
                 } else {

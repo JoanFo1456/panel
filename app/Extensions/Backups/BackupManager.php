@@ -4,7 +4,6 @@ namespace App\Extensions\Backups;
 
 use App\Extensions\Filesystem\S3Filesystem;
 use App\Models\BackupHost;
-use App\Models\Node;
 use Aws\S3\S3Client;
 use Closure;
 use Illuminate\Foundation\Application;
@@ -42,36 +41,19 @@ class BackupManager
     }
 
     /**
-     * Returns a backup adapter instance for a specific node.
-     */
-    public function adapterForNode(Node $node): FilesystemAdapter
-    {
-        $driver = $node->backup_driver;
-        $config = $this->getConfig($driver);
-
-        if ($node->backup_config) {
-            $config = array_merge($config, $node->backup_config);
-        }
-
-        $adapterName = "node_{$node->id}_{$driver}";
-
-        return $this->adapters[$adapterName] ??= $this->createAdapter($config);
-    }
-
-    /**
      * Returns a backup adapter instance for a specific backup configuration.
      */
     public function adapterForBackupConfiguration(BackupHost $backupConfiguration): FilesystemAdapter
     {
         $driver = $backupConfiguration->driver;
-        
+
         $config = [
             'adapter' => $driver === 's3' ? 's3' : 'wings',
         ];
 
         if ($backupConfiguration->config) {
             $hostConfig = $backupConfiguration->config;
-            
+
             $config = array_merge($config, $hostConfig);
         }
 
@@ -79,7 +61,7 @@ class BackupManager
             if (!isset($config['use_path_style_endpoint'])) {
                 $config['use_path_style_endpoint'] = $backupConfiguration->use_path_style_endpoint ?? true;
             }
-            
+
             if (!isset($config['region']) || empty($config['region'])) {
                 $config['region'] = 'us-east-1'; // Otherwise it will completely fail.
             }
@@ -92,6 +74,8 @@ class BackupManager
 
     /**
      * Create an adapter from config.
+     *
+     * @param  array<string, mixed>  $config
      */
     protected function createAdapter(array $config): FilesystemAdapter
     {
@@ -104,6 +88,7 @@ class BackupManager
         $adapterMethod = 'create' . Str::studly($adapter) . 'Adapter';
         $instance = $this->{$adapterMethod}($config);
         Assert::isInstanceOf($instance, FilesystemAdapter::class);
+
         return $instance;
     }
 
