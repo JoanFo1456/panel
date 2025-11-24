@@ -46,10 +46,9 @@ class DownloadLinkService
     {
         $backupConfiguration = $backup->server->node->backupHosts()->where('driver', 's3')->first();
 
-            if (!$backupConfiguration) {
-                throw new \Exception('No S3 backup configuration available for this server.');
-            }
-        
+        if (!$backupConfiguration) {
+            throw new \Exception('No S3 backup configuration available for this server.');
+        }
 
         /** @var S3Filesystem $adapter */
         $adapter = $this->backupManager->adapter(Backup::ADAPTER_AWS_S3);
