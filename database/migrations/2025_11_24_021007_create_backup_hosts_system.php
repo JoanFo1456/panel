@@ -31,9 +31,6 @@ return new class extends Migration
             $table->unique(['backup_host_id', 'node_id']);
         });
 
-        Schema::table('servers', function (Blueprint $table) {
-            $table->foreignId('backup_host_id')->nullable()->constrained('backup_hosts')->nullOnDelete();
-        });
     }
 
     /**
@@ -41,13 +38,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('servers', function (Blueprint $table) {
-            $table->dropForeign(['backup_host_id']);
-            $table->dropColumn('backup_host_id');
-        });
-
         Schema::dropIfExists('backup_host_node');
-
         Schema::dropIfExists('backup_hosts');
     }
 };
