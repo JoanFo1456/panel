@@ -7,6 +7,7 @@ use App\Enums\ContainerStatus;
 use App\Enums\ServerResourceType;
 use App\Enums\ServerState;
 use App\Exceptions\Http\Server\ServerStateConflictException;
+use App\Models\BackupHost;
 use App\Repositories\Daemon\DaemonServerRepository;
 use App\Services\Subusers\SubuserDeletionService;
 use App\Traits\HasValidation;
@@ -378,6 +379,14 @@ class Server extends Model implements HasAvatar, Validatable
     public function backups(): HasMany
     {
         return $this->hasMany(Backup::class);
+    }
+
+    /**
+     * @return BelongsTo<BackupHost, $this>
+     */
+    public function backupConfiguration(): BelongsTo
+    {
+        return $this->belongsTo(BackupHost::class, 'backup_host_id');
     }
 
     public function mounts(): MorphToMany

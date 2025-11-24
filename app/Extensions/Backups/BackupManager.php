@@ -3,6 +3,8 @@
 namespace App\Extensions\Backups;
 
 use App\Extensions\Filesystem\S3Filesystem;
+use App\Models\BackupHost;
+use App\Models\Node;
 use Aws\S3\S3Client;
 use Closure;
 use Illuminate\Foundation\Application;
@@ -40,6 +42,72 @@ class BackupManager
     }
 
     /**
+     * Returns a backup adapter instance for a specific node.
+     */
+    public function adapterForNode(Node $node): FilesystemAdapter
+    {
+        $driver = $node->backup_driver;
+        $config = $this->getConfig($driver);
+
+        if ($node->backup_config) {
+            $config = array_merge($config, $node->backup_config);
+        }
+
+        $adapterName = "node_{$node->id}_{$driver}";
+
+        return $this->adapters[$adapterName] ??= $this->createAdapter($config);
+    }
+
+    /**
+     * Returns a backup adapter instance for a specific backup configuration.
+     */
+    public function adapterForBackupConfiguration(BackupHost $backupConfiguration): FilesystemAdapter
+    {
+        $driver = $backupConfiguration->driver;
+        
+        $config = [
+            'adapter' => $driver === 's3' ? 's3' : 'wings',
+        ];
+
+        if ($backupConfiguration->config) {
+            $hostConfig = $backupConfiguration->config;
+            
+            $config = array_merge($config, $hostConfig);
+        }
+
+        if ($driver === 's3') {
+            if (!isset($config['use_path_style_endpoint'])) {
+                $config['use_path_style_endpoint'] = $backupConfiguration->use_path_style_endpoint ?? true;
+            }
+            
+            if (!isset($config['region']) || empty($config['region'])) {
+                $config['region'] = 'us-east-1'; // Otherwise it will completely fail.
+            }
+        }
+
+        $adapterName = "backup_config_{$backupConfiguration->id}_{$driver}";
+
+        return $this->adapters[$adapterName] ??= $this->createAdapter($config);
+    }
+
+    /**
+     * Create an adapter from config.
+     */
+    protected function createAdapter(array $config): FilesystemAdapter
+    {
+        $adapter = $config['adapter'];
+
+        if ($this->customCreators[$adapter] ?? false) {
+            return $this->callCustomCreator($config);
+        }
+
+        $adapterMethod = 'create' . Str::studly($adapter) . 'Adapter';
+        $instance = $this->{$adapterMethod}($config);
+        Assert::isInstanceOf($instance, FilesystemAdapter::class);
+        return $instance;
+    }
+
+    /**
      * Set the given backup adapter instance.
      */
     public function set(string $name, FilesystemAdapter $disk): self
@@ -68,22 +136,7 @@ class BackupManager
             throw new InvalidArgumentException("Backup disk [$name] does not have a configured adapter.");
         }
 
-        $adapter = $config['adapter'];
-
-        if (isset($this->customCreators[$name])) {
-            return $this->callCustomCreator($config);
-        }
-
-        $adapterMethod = 'create' . Str::studly($adapter) . 'Adapter';
-        if (method_exists($this, $adapterMethod)) {
-            $instance = $this->{$adapterMethod}($config);
-
-            Assert::isInstanceOf($instance, FilesystemAdapter::class);
-
-            return $instance;
-        }
-
-        throw new InvalidArgumentException("Adapter [$adapter] is not supported.");
+        return $this->createAdapter($config);
     }
 
     /**
@@ -99,7 +152,7 @@ class BackupManager
     /**
      * Creates a new daemon adapter.
      *
-     * @param  array<string, string>  $config
+     * @param  array<string, mixed>  $config
      */
     public function createWingsAdapter(array $config): FilesystemAdapter
     {
@@ -109,7 +162,7 @@ class BackupManager
     /**
      * Creates a new S3 adapter.
      *
-     * @param  array<string, string>  $config
+     * @param  array<string, mixed>  $config
      */
     public function createS3Adapter(array $config): FilesystemAdapter
     {
@@ -118,7 +171,6 @@ class BackupManager
         if (!empty($config['key']) && !empty($config['secret'])) {
             $config['credentials'] = Arr::only($config, ['key', 'secret', 'token']);
         }
-
         $client = new S3Client($config);
 
         return new S3Filesystem($client, $config['bucket'], $config['prefix'] ?? '', $config['options'] ?? []);

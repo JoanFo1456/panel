@@ -10,6 +10,7 @@ use App\Facades\Activity;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Remote\ReportBackupCompleteRequest;
 use App\Models\Backup;
+use App\Models\BackupHost;
 use App\Models\Node;
 use App\Models\Server;
 use Carbon\CarbonImmutable;
@@ -73,9 +74,27 @@ class BackupStatusController extends Controller
 
             // Check if we are using the s3 backup adapter. If so, make sure we mark the backup as
             // being completed in S3 correctly.
-            $adapter = $this->backupManager->adapter();
-            if ($adapter instanceof S3Filesystem) {
-                $this->completeMultipartUpload($model, $adapter, $successful, $request->input('parts'));
+            $backupConfiguration = $model->server->backupConfiguration;
+
+            if (!$backupConfiguration || $backupConfiguration->driver !== 's3') {
+                $nodeS3Config = $model->server->node->backupConfigurations()->where('driver', 's3')->first();
+                if ($nodeS3Config) {
+                    $backupConfiguration = $nodeS3Config;
+                }
+            }
+
+            if ($backupConfiguration && $backupConfiguration->driver === 's3') {
+                if (!$backupConfiguration->exists || !$backupConfiguration->config) {
+                    $backupConfiguration = BackupHost::find($backupConfiguration->id);
+                    if (!$backupConfiguration || !$backupConfiguration->config) {
+                        throw new \Exception('Backup configuration is missing config data.');
+                    }
+                }
+
+                $adapter = $this->backupManager->adapterForBackupConfiguration($backupConfiguration);
+                if ($adapter instanceof S3Filesystem) {
+                    $this->completeMultipartUpload($model, $adapter, $successful, $request->input('parts'));
+                }
             }
         });
 

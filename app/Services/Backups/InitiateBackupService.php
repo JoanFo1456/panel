@@ -111,18 +111,30 @@ class InitiateBackupService
         }
 
         return $this->connection->transaction(function () use ($server, $name) {
+            $backupConfiguration = $server->backupConfiguration;
+
+            if (!$backupConfiguration) {
+                $backupConfiguration = $server->node->backupConfigurations()->where('driver', 's3')->first();
+                
+                if (!$backupConfiguration) {
+                    throw new \Exception('No S3 backup configuration available for this server.');
+                }
+            }
+
+            $adapterName = $backupConfiguration->driver;
+
             /** @var Backup $backup */
             $backup = Backup::query()->create([
                 'server_id' => $server->id,
                 'uuid' => Uuid::uuid4()->toString(),
                 'name' => trim($name) ?: sprintf('Backup at %s', now()->toDateTimeString()),
                 'ignored_files' => array_values($this->ignoredFiles ?? []),
-                'disk' => $this->backupManager->getDefaultAdapter(),
+                'disk' => $adapterName,
                 'is_locked' => $this->isLocked,
             ]);
 
             $this->daemonBackupRepository->setServer($server)
-                ->setBackupAdapter($this->backupManager->getDefaultAdapter())
+                ->setBackupAdapter($backupConfiguration->driver)
                 ->backup($backup);
 
             return $backup;
