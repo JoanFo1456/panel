@@ -5,7 +5,13 @@ return [
     'model_label' => 'Backup Host',
     'model_label_plural' => 'Backup Hosts',
     'name' => 'Name',
+    'server' => 'Server',
+    'size' => 'Size',
     'driver' => 'Driver',
+    'status' => 'Status',
+    'locked' => 'Locked',
+    'download' => 'Download',
+    'created_at' => 'Created At',
     'linked_nodes' => 'Linked Nodes',
     'no_nodes' => 'No nodes linked',
     'backup_driver' => 'Backup Driver',
@@ -21,4 +27,5 @@ return [
     'use_path_style_endpoint' => 'Use Path Style Endpoint',
     'yes' => 'Yes',
     'no' => 'No',
+
 ];

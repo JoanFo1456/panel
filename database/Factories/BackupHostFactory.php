@@ -15,7 +15,6 @@ class BackupHostFactory extends Factory
             'name' => $this->faker->unique()->word(),
             'driver' => 'wings',
             'config' => null,
-            'use_path_style_endpoint' => true,
         ];
     }
 }

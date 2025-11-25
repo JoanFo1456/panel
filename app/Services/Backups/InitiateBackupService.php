@@ -4,6 +4,7 @@ namespace App\Services\Backups;
 
 use App\Exceptions\Service\Backup\TooManyBackupsException;
 use App\Models\Backup;
+use App\Models\BackupHost;
 use App\Models\Server;
 use App\Repositories\Daemon\DaemonBackupRepository;
 use Illuminate\Database\ConnectionInterface;
@@ -109,7 +110,9 @@ class InitiateBackupService
         }
 
         return $this->connection->transaction(function () use ($server, $name) {
-            $backupConfiguration = $server->node->backupHosts()->first();
+            $backupConfiguration = BackupHost::whereHas('nodes', function ($query) use ($server) {
+                $query->where('nodes.id', $server->node_id);
+            })->first();
 
             if (!$backupConfiguration) {
                 throw new \Exception('No backup configuration available for this server.');

@@ -11,10 +11,16 @@ class EditBackupHost extends EditRecord
 {
     protected static string $resource = BackupHostResource::class;
 
+    protected function authorizeAccess(): void
+    {
+        $this->authorize('backup_host.update');
+    }
+
     protected function getHeaderActions(): array
     {
         return [
             DeleteAction::make()
+                ->authorize('backup_host.delete')
                 ->disabled(fn ($record) => $record->backups->count() > 0)
                 ->label(fn ($record) => $record->backups->count() > 0 ? trans('admin/backup.has_records') : trans('filament-actions::delete.single.modal.actions.delete.label')),
             Action::make('save')

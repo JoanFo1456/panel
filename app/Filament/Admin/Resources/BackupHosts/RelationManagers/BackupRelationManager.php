@@ -10,7 +10,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -20,50 +19,46 @@ class BackupRelationManager extends RelationManager
 {
     protected static string $relationship = 'backups';
 
-    public function schema(Schema $schema): Schema
-    {
-        return $schema
-            ->schema([
-            ]);
-    }
-
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name'),
+                    ->label(trans('admin/backup.name')),
                 TextColumn::make('server.name')
-                    ->label('Server'),
+                    ->label(trans('admin/backup.server')),
                 TextColumn::make('bytes')
-                    ->label('Size')
-                    ->formatStateUsing(fn ($state) => number_format($state / 1024 / 1024, 2) . ' MB'),
+                    ->label(trans('admin/backup.size'))
+                    ->formatStateUsing(fn ($state) => convert_bytes_to_readable($state)),
                 TextColumn::make('created_at')
-                    ->label('Created At')
+                    ->label(trans('admin/backup.created_at'))
                     ->dateTime(),
                 TextColumn::make('status')
-                    ->label('Status')
+                    ->label(trans('admin/backup.status'))
                     ->badge(),
                 IconColumn::make('is_locked')
                     ->boolean()
-                    ->label('Locked'),
+                    ->label(trans('admin/backup.locked')),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
                 Action::make('download')
-                    ->label('Download')
+                    ->label(trans('admin/backup.download'))
                     ->color('primary')
                     ->icon('tabler-download')
+                    ->authorize('backup.download')
                     ->url(fn (DownloadLinkService $downloadLinkService, Backup $backup, Request $request) => $downloadLinkService->handle($backup, $request->user()), true)
                     ->visible(fn (Backup $backup) => $backup->status === BackupStatus::Successful),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->authorize('backup.delete'),
             ])
             ->headerActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->authorize('backup.delete'),
                 ]),
             ]);
     }

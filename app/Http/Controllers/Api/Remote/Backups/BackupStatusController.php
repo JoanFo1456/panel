@@ -72,7 +72,9 @@ class BackupStatusController extends Controller
                 'completed_at' => CarbonImmutable::now(),
             ])->save();
 
-            $backupConfiguration = $model->server->node->backupHosts()->where('driver', 's3')->first();
+            $backupConfiguration = BackupHost::whereHas('nodes', function ($query) use ($model) {
+                $query->where('nodes.id', $model->server->node_id);
+            })->where('driver', 's3')->first();
 
             if ($backupConfiguration && $backupConfiguration->driver === 's3') {
                 $backupConfiguration = BackupHost::find($backupConfiguration->id);

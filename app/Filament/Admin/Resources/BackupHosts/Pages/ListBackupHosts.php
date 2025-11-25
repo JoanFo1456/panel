@@ -10,10 +10,16 @@ class ListBackupHosts extends ListRecords
 {
     protected static string $resource = BackupHostResource::class;
 
+    protected function authorizeAccess(): void
+    {
+        $this->authorize('backup_host.view');
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->authorize('backupHost.create'),
         ];
     }
 }

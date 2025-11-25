@@ -36,7 +36,8 @@ class BackupHostsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->authorize('backup_host.delete'),
                 ]),
             ]);
     }

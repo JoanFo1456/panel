@@ -9,7 +9,6 @@ use Closure;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\InMemory\InMemoryFilesystemAdapter;
 use Webmozart\Assert\Assert;
@@ -33,14 +32,6 @@ class BackupManager
     public function __construct(protected Application $app) {}
 
     /**
-     * Returns a backup adapter instance.
-     */
-    public function adapter(?string $name = null): FilesystemAdapter
-    {
-        return $this->get($name ?: $this->getDefaultAdapter());
-    }
-
-    /**
      * Returns a backup adapter instance for a specific backup configuration.
      */
     public function adapterForBackupConfiguration(BackupHost $backupConfiguration): FilesystemAdapter
@@ -57,6 +48,9 @@ class BackupManager
             $config = array_merge($config, $hostConfig);
         }
 
+        $config['use_path_style_endpoint'] = (bool) $backupConfiguration->use_path_style_endpoint;
+        $config['use_accelerate_endpoint'] = (bool) $backupConfiguration->use_accelerate_endpoint;
+
         $adapterName = "backup_config_{$backupConfiguration->id}_{$driver}";
 
         return $this->adapters[$adapterName] ??= $this->createAdapter($config);
@@ -70,10 +64,6 @@ class BackupManager
     protected function createAdapter(array $config): FilesystemAdapter
     {
         $adapter = $config['adapter'];
-
-        if ($this->customCreators[$adapter] ?? false) {
-            return $this->callCustomCreator($config);
-        }
 
         $adapterMethod = 'create' . Str::studly($adapter) . 'Adapter';
         $instance = $this->{$adapterMethod}($config);
@@ -90,38 +80,6 @@ class BackupManager
         $this->adapters[$name] = $disk;
 
         return $this;
-    }
-
-    /**
-     * Gets a backup adapter.
-     */
-    protected function get(string $name): FilesystemAdapter
-    {
-        return $this->adapters[$name] = $this->resolve($name);
-    }
-
-    /**
-     * Resolve the given backup disk.
-     */
-    protected function resolve(string $name): FilesystemAdapter
-    {
-        $config = $this->getConfig($name);
-
-        if (empty($config['adapter'])) {
-            throw new InvalidArgumentException("Backup disk [$name] does not have a configured adapter.");
-        }
-
-        return $this->createAdapter($config);
-    }
-
-    /**
-     * Calls a custom creator for a given adapter type.
-     *
-     * @param  array{adapter: string}  $config
-     */
-    protected function callCustomCreator(array $config): mixed
-    {
-        return $this->customCreators[$config['adapter']]($this->app, $config);
     }
 
     /**
@@ -149,32 +107,6 @@ class BackupManager
         $client = new S3Client($config);
 
         return new S3Filesystem($client, $config['bucket'], $config['prefix'] ?? '', $config['options'] ?? []);
-    }
-
-    /**
-     * Returns the configuration associated with a given backup type.
-     *
-     * @return array<mixed>
-     */
-    protected function getConfig(string $name): array
-    {
-        return config("backups.disks.$name") ?: [];
-    }
-
-    /**
-     * Get the default backup driver name.
-     */
-    public function getDefaultAdapter(): string
-    {
-        return config('backups.default');
-    }
-
-    /**
-     * Set the default session driver name.
-     */
-    public function setDefaultAdapter(string $name): void
-    {
-        config()->set('backups.default', $name);
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Exceptions\Service\Backup\BackupLockedException;
 use App\Extensions\Backups\BackupManager;
 use App\Extensions\Filesystem\S3Filesystem;
 use App\Models\Backup;
+use App\Models\BackupHost;
 use App\Repositories\Daemon\DaemonBackupRepository;
 use Aws\S3\S3Client;
 use Exception;
@@ -39,7 +40,7 @@ class DeleteBackupService
             throw new BackupLockedException();
         }
 
-        if ($backup->backupHost->driver === Backup::ADAPTER_AWS_S3) {
+        if ($backup->host->driver === Backup::ADAPTER_AWS_S3) {
             $this->deleteFromS3($backup);
 
             return;
@@ -70,7 +71,9 @@ class DeleteBackupService
         $this->connection->transaction(function () use ($backup) {
             $backup->delete();
 
-            $backupConfiguration = $backup->server->node->backupHosts()->where('driver', 's3')->first();
+            $backupConfiguration = BackupHost::whereHas('nodes', function ($query) use ($backup) {
+                $query->where('nodes.id', $backup->server->node_id);
+            })->where('driver', 's3')->first();
             if (!$backupConfiguration) {
                 throw new Exception('No S3 backup configuration available for this server.');
             }

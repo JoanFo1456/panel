@@ -32,7 +32,7 @@ use Illuminate\Database\Query\Builder;
  * @property CarbonImmutable $updated_at
  * @property CarbonImmutable|null $deleted_at
  * @property Server $server
- * @property BackupHost $backupHost
+ * @property BackupHost $host
  */
 class Backup extends Model implements Validatable
 {
@@ -97,9 +97,9 @@ class Backup extends Model implements Validatable
         return $this->belongsTo(Server::class);
     }
 
-    public function backupHost(): BelongsTo
+    public function host(): BelongsTo
     {
-        return $this->belongsTo(BackupHost::class);
+        return $this->belongsTo(BackupHost::class, 'backup_host_id');
     }
 
     /**

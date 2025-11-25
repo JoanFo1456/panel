@@ -10,4 +10,9 @@ class CreateBackupHost extends CreateRecord
     protected static string $resource = BackupHostResource::class;
 
     protected static bool $canCreateAnother = false;
+
+    protected function authorizeAccess(): void
+    {
+        $this->authorize('backupHost.create');
+    }
 }

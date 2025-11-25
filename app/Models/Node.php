@@ -55,10 +55,6 @@ use Symfony\Component\Yaml\Yaml;
  * @property int|null $allocations_count
  * @property Role[]|Collection $roles
  * @property int|null $roles_count
- * @property BackupHost[]|Collection $backupHosts
- * @property int|null $backupHosts_count
- * @property BackupHost[]|Collection $backupConfigurations
- * @property int|null $backupConfigurations_count
  */
 class Node extends Model implements Validatable
 {
@@ -160,14 +156,6 @@ class Node extends Model implements Validatable
     public int $servers_sum_disk = 0;
 
     public int $servers_sum_cpu = 0;
-
-    /**
-     * @return BelongsToMany<BackupHost, $this>
-     */
-    public function backupHosts(): BelongsToMany
-    {
-        return $this->belongsToMany(BackupHost::class)->select(['backup_hosts.*']);
-    }
 
     protected static function booted(): void
     {

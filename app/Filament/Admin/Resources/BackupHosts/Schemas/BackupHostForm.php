@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\BackupHosts\Schemas;
 
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -64,22 +65,15 @@ class BackupHostForm
                                     ->label(trans('admin/backup.s3_endpoint')),
                                 TextInput::make('config.prefix')
                                     ->label(trans('admin/backup.s3_prefix')),
-                                ToggleButtons::make('use_accelerate_endpoint')
-                                    ->label(trans('admin/backup.use_accelerate_endpoint'))
-                                    ->default(0)
-                                    ->options([
-                                        1 => trans('admin/backup.yes'),
-                                        0 => trans('admin/backup.no'),
-                                    ])
-                                    ->dehydrateStateUsing(fn ($state) => $state !== '' ? $state : 0),
-                                ToggleButtons::make('use_path_style_endpoint')
+                                Toggle::make('use_path_style_endpoint')
                                     ->label(trans('admin/backup.use_path_style_endpoint'))
-                                    ->options([
-                                        1 => trans('admin/backup.yes'),
-                                        0 => trans('admin/backup.no'),
-                                    ])
-                                    ->default(1)
-                                    ->inline(),
+                                    ->default(true)
+                                    ->dehydrateStateUsing(fn ($state) => $state ? 1 : 0),
+                                Toggle::make('use_accelerate_endpoint')
+                                    ->label(trans('admin/backup.use_accelerate_endpoint'))
+                                    ->default(false)
+                                    ->dehydrateStateUsing(fn ($state) => $state ? 1 : 0),
+
                             ]),
                         Select::make('node_ids')
                             ->multiple()

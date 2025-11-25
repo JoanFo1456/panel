@@ -185,7 +185,7 @@ class BackupController extends ClientApiController
             throw new AuthorizationException();
         }
 
-        if ($backup->backupHost->driver !== Backup::ADAPTER_AWS_S3 && $backup->backupHost->driver !== Backup::ADAPTER_DAEMON) {
+        if ($backup->host->driver !== Backup::ADAPTER_AWS_S3 && $backup->host->driver !== Backup::ADAPTER_DAEMON) {
             throw new BadRequestHttpException('The backup requested references an unknown disk driver type and cannot be downloaded.');
         }
 
@@ -260,7 +260,7 @@ class BackupController extends ClientApiController
         $log->transaction(function () use ($backup, $server, $request) {
             // If the backup is for an S3 file we need to generate a unique Download link for
             // it that will allow daemon to actually access the file.
-            if ($backup->backupHost->driver === Backup::ADAPTER_AWS_S3) {
+            if ($backup->host->driver === Backup::ADAPTER_AWS_S3) {
                 $url = $this->downloadLinkService->handle($backup, $request->user());
             }
 

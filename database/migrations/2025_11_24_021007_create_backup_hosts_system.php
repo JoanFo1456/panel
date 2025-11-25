@@ -88,7 +88,17 @@ return new class extends Migration
             $wingsHost->nodes()->attach($node->id);
         }
 
-        $s3Config = config('backups.disks.s3');
+        $s3Config = [
+            'region' => env('AWS_DEFAULT_REGION'),
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'bucket' => env('AWS_BACKUPS_BUCKET'),
+            'prefix' => env('AWS_BACKUPS_BUCKET') ?? '',
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => false,
+            'use_accelerate_endpoint' => false,
+            'storage_class' => env('AWS_BACKUPS_STORAGE_CLASS'),
+        ];
         if (!empty($s3Config['bucket'])) {
             $s3Host = BackupHost::create([
                 'name' => 'S3 Backups',
@@ -100,7 +110,7 @@ return new class extends Migration
                     'bucket' => $s3Config['bucket'],
                     'prefix' => $s3Config['prefix'],
                     'endpoint' => $s3Config['endpoint'],
-                    'use_path_style_endpoint' => $s3Config['use_path_style_endpoint'] ?? false,
+                    'use_path_style_endpoint' => $s3Config['use_path_style_endpoint'],
                     'use_accelerate_endpoint' => $s3Config['use_accelerate_endpoint'],
                     'storage_class' => $s3Config['storage_class'],
                 ],

@@ -45,7 +45,7 @@ class DaemonBackupRepository extends DaemonRepository
     {
         return $this->getHttpClient()->post("/api/servers/{$this->server->uuid}/backup/$backup->uuid/restore",
             [
-                'adapter' => $backup->backupHost->driver,
+                'adapter' => $backup->host->driver,
                 'truncate_directory' => $truncate,
                 'download_url' => $url ?? '',
             ]

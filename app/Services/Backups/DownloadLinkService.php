@@ -5,6 +5,7 @@ namespace App\Services\Backups;
 use App\Extensions\Backups\BackupManager;
 use App\Extensions\Filesystem\S3Filesystem;
 use App\Models\Backup;
+use App\Models\BackupHost;
 use App\Models\User;
 use App\Services\Nodes\NodeJWTService;
 use Carbon\CarbonImmutable;
@@ -22,7 +23,7 @@ class DownloadLinkService
      */
     public function handle(Backup $backup, User $user): string
     {
-        if ($backup->backupHost->driver === Backup::ADAPTER_AWS_S3) {
+        if ($backup->host->driver === Backup::ADAPTER_AWS_S3) {
             return $this->getS3BackupUrl($backup);
         }
 
@@ -44,7 +45,9 @@ class DownloadLinkService
      */
     protected function getS3BackupUrl(Backup $backup): string
     {
-        $backupConfiguration = $backup->server->node->backupHosts()->where('driver', 's3')->first();
+        $backupConfiguration = BackupHost::whereHas('nodes', function ($query) use ($backup) {
+            $query->where('nodes.id', $backup->server->node_id);
+        })->where('driver', 's3')->first();
 
         if (!$backupConfiguration) {
             throw new \Exception('No S3 backup configuration available for this server.');
