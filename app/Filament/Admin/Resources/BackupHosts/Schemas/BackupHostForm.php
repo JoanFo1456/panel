@@ -31,6 +31,7 @@ class BackupHostForm
                             ->unique(ignoreRecord: true)
                             ->columnSpan(2),
                         ToggleButtons::make('driver')
+                            ->disabled(fn ($record) => $record !== null)
                             ->label(trans('admin/backup.backup_driver'))
                             ->options([
                                 'wings' => 'Wings',
@@ -39,9 +40,12 @@ class BackupHostForm
                             ->default('wings')
                             ->inline()
                             ->required()
+                            ->columnSpan(2)
                             ->live(),
                         Grid::make(2)
                             ->visible(fn ($get) => $get('driver') === 's3')
+                            ->columns(4)
+                            ->columnSpanFull()
                             ->schema([
                                 TextInput::make('config.bucket')
                                     ->label(trans('admin/backup.s3_bucket'))
@@ -60,13 +64,21 @@ class BackupHostForm
                                     ->label(trans('admin/backup.s3_endpoint')),
                                 TextInput::make('config.prefix')
                                     ->label(trans('admin/backup.s3_prefix')),
+                                ToggleButtons::make('use_accelerate_endpoint')
+                                    ->label(trans('admin/backup.use_accelerate_endpoint'))
+                                    ->default(0)
+                                    ->options([
+                                        1 => trans('admin/backup.yes'),
+                                        0 => trans('admin/backup.no'),
+                                    ])
+                                    ->dehydrateStateUsing(fn ($state) => $state !== '' ? $state : 0),
                                 ToggleButtons::make('use_path_style_endpoint')
                                     ->label(trans('admin/backup.use_path_style_endpoint'))
                                     ->options([
-                                        true => trans('admin/backup.yes'),
-                                        false => trans('admin/backup.no'),
+                                        1 => trans('admin/backup.yes'),
+                                        0 => trans('admin/backup.no'),
                                     ])
-                                    ->default(false)
+                                    ->default(1)
                                     ->inline(),
                             ]),
                         Select::make('node_ids')

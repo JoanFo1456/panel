@@ -109,10 +109,10 @@ class InitiateBackupService
         }
 
         return $this->connection->transaction(function () use ($server, $name) {
-            $backupConfiguration = $server->node->backupHosts()->where('driver', 's3')->first();
+            $backupConfiguration = $server->node->backupHosts()->first();
 
             if (!$backupConfiguration) {
-                throw new \Exception('No S3 backup configuration available for this server.');
+                throw new \Exception('No backup configuration available for this server.');
             }
 
             $adapterName = $backupConfiguration->driver;
@@ -123,7 +123,7 @@ class InitiateBackupService
                 'uuid' => Uuid::uuid4()->toString(),
                 'name' => trim($name) ?: sprintf('Backup at %s', now()->toDateTimeString()),
                 'ignored_files' => array_values($this->ignoredFiles ?? []),
-                'disk' => $adapterName,
+                'backup_host_id' => $backupConfiguration->id,
                 'is_locked' => $this->isLocked,
             ]);
 

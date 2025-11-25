@@ -66,7 +66,7 @@ class BackupRemoteUploadController extends Controller
             throw new ConflictHttpException('This backup is already in a completed state.');
         }
 
-        if ($model->disk !== Backup::ADAPTER_AWS_S3) {
+        if ($model->backupHost->driver !== Backup::ADAPTER_AWS_S3) {
             throw new BadRequestHttpException('The configured backup adapter is not an S3 compatible adapter.');
         }
 
@@ -83,7 +83,7 @@ class BackupRemoteUploadController extends Controller
             }
         }
 
-        $adapter = $this->backupManager->adapter(Backup::ADAPTER_AWS_S3);
+        $adapter = $this->backupManager->adapterForBackupConfiguration($backupConfiguration);
         if (!$adapter instanceof S3Filesystem) {
             throw new BadRequestHttpException('The configured backup adapter is not an S3 compatible adapter.');
         }

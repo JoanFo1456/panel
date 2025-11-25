@@ -22,7 +22,7 @@ class DownloadLinkService
      */
     public function handle(Backup $backup, User $user): string
     {
-        if ($backup->disk === Backup::ADAPTER_AWS_S3) {
+        if ($backup->backupHost->driver === Backup::ADAPTER_AWS_S3) {
             return $this->getS3BackupUrl($backup);
         }
 
@@ -51,7 +51,7 @@ class DownloadLinkService
         }
 
         /** @var S3Filesystem $adapter */
-        $adapter = $this->backupManager->adapter(Backup::ADAPTER_AWS_S3);
+        $adapter = $this->backupManager->adapterForBackupConfiguration($backupConfiguration);
 
         $request = $adapter->getClient()->createPresignedRequest(
             $adapter->getClient()->getCommand('GetObject', [

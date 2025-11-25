@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\BackupHosts;
 use App\Filament\Admin\Resources\BackupHosts\Pages\CreateBackupHost;
 use App\Filament\Admin\Resources\BackupHosts\Pages\EditBackupHost;
 use App\Filament\Admin\Resources\BackupHosts\Pages\ListBackupHosts;
+use App\Filament\Admin\Resources\BackupHosts\RelationManagers\BackupRelationManager;
 use App\Filament\Admin\Resources\BackupHosts\Schemas\BackupHostForm;
 use App\Filament\Admin\Resources\BackupHosts\Tables\BackupHostsTable;
 use App\Models\BackupHost;
@@ -50,7 +51,7 @@ class BackupHostResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            BackupRelationManager::class,
         ];
     }
 

@@ -209,7 +209,7 @@ class BackupResource extends Resource
                             $log->transaction(function () use ($downloadLinkService, $daemonRepository, $backup, $server, $data) {
                                 // If the backup is for an S3 file we need to generate a unique Download link for
                                 // it that will allow daemon to actually access the file.
-                                if ($backup->disk === Backup::ADAPTER_AWS_S3) {
+                                if ($backup->backupHost->driver === Backup::ADAPTER_AWS_S3) {
                                     $url = $downloadLinkService->handle($backup, user());
                                 }
 

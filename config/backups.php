@@ -57,9 +57,6 @@ return [
             'prefix' => env('AWS_BACKUPS_BUCKET') ?? '',
 
             'endpoint' => env('AWS_ENDPOINT'),
-            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-            'use_accelerate_endpoint' => env('AWS_BACKUPS_USE_ACCELERATE', false),
-
             'storage_class' => env('AWS_BACKUPS_STORAGE_CLASS'),
         ],
     ],

@@ -39,7 +39,7 @@ class DeleteBackupService
             throw new BackupLockedException();
         }
 
-        if ($backup->disk === Backup::ADAPTER_AWS_S3) {
+        if ($backup->backupHost->driver === Backup::ADAPTER_AWS_S3) {
             $this->deleteFromS3($backup);
 
             return;
@@ -76,7 +76,7 @@ class DeleteBackupService
             }
 
             /** @var S3Filesystem $adapter */
-            $adapter = $this->manager->adapter(Backup::ADAPTER_AWS_S3);
+            $adapter = $this->manager->adapterForBackupConfiguration($backupConfiguration);
 
             /** @var S3Client $client */
             $client = $adapter->getClient();

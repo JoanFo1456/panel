@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Backup;
+use App\Models\BackupHost;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Ramsey\Uuid\Uuid;
@@ -24,7 +25,7 @@ class BackupFactory extends Factory
         return [
             'uuid' => Uuid::uuid4()->toString(),
             'name' => $this->faker->sentence(),
-            'disk' => Backup::ADAPTER_DAEMON,
+            'backup_host_id' => BackupHost::factory()->create(['driver' => Backup::ADAPTER_DAEMON])->id,
             'is_successful' => true,
             'created_at' => CarbonImmutable::now(),
             'completed_at' => CarbonImmutable::now(),

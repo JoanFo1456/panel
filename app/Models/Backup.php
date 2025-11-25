@@ -22,7 +22,7 @@ use Illuminate\Database\Query\Builder;
  * @property bool $is_locked
  * @property string $name
  * @property string[] $ignored_files
- * @property string $disk
+ * @property int $backup_host_id
  * @property string|null $checksum
  * @property int $bytes
  * @property string|null $upload_id
@@ -32,6 +32,7 @@ use Illuminate\Database\Query\Builder;
  * @property CarbonImmutable $updated_at
  * @property CarbonImmutable|null $deleted_at
  * @property Server $server
+ * @property BackupHost $backupHost
  */
 class Backup extends Model implements Validatable
 {
@@ -63,7 +64,7 @@ class Backup extends Model implements Validatable
         'is_locked' => ['boolean'],
         'name' => ['required', 'string'],
         'ignored_files' => ['array'],
-        'disk' => ['required', 'string'],
+        'backup_host_id' => ['required', 'numeric', 'exists:backup_hosts,id'],
         'checksum' => ['nullable', 'string'],
         'bytes' => ['numeric'],
         'upload_id' => ['nullable', 'string'],
@@ -94,6 +95,11 @@ class Backup extends Model implements Validatable
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    public function backupHost(): BelongsTo
+    {
+        return $this->belongsTo(BackupHost::class);
     }
 
     /**
