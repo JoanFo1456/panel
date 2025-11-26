@@ -11,8 +11,4 @@ class CreateBackupHost extends CreateRecord
 
     protected static bool $canCreateAnother = false;
 
-    protected function authorizeAccess(): void
-    {
-        $this->authorize('backupHost.create');
-    }
 }

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $driver
  * @property array<string, mixed>|null $config
  * @property bool $use_path_style_endpoint
+ * @property bool $use_accelerate_endpoint
  */
 class BackupHost extends Model
 {

@@ -16,7 +16,7 @@ class EditBackupHost extends EditRecord
         $this->authorize('backup_host.update');
     }
 
-    protected function getHeaderActions(): array
+    protected function getDefaultHeaderActions(): array
     {
         return [
             DeleteAction::make()
@@ -29,7 +29,7 @@ class EditBackupHost extends EditRecord
         ];
     }
 
-    protected function getFormActions(): array
+    protected function getDefaultFormActions(): array
     {
         return [];
     }

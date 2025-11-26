@@ -72,14 +72,14 @@ class BackupStatusController extends Controller
                 'completed_at' => CarbonImmutable::now(),
             ])->save();
 
-            $backupConfiguration = BackupHost::whereHas('nodes', function ($query) use ($model) {
+            $backupHost = BackupHost::whereHas('nodes', function ($query) use ($model) {
                 $query->where('nodes.id', $model->server->node_id);
             })->where('driver', 's3')->first();
 
-            if ($backupConfiguration && $backupConfiguration->driver === 's3') {
-                $backupConfiguration = BackupHost::find($backupConfiguration->id);
+            if ($backupHost && $backupHost->driver === 's3') {
+                $backupHost = BackupHost::find($backupHost->id);
 
-                $adapter = $this->backupManager->adapterForBackupConfiguration($backupConfiguration);
+                $adapter = $this->backupManager->adapter($backupHost);
                 if ($adapter instanceof S3Filesystem) {
                     $this->completeMultipartUpload($model, $adapter, $successful, $request->input('parts'));
                 }

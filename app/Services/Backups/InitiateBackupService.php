@@ -110,15 +110,15 @@ class InitiateBackupService
         }
 
         return $this->connection->transaction(function () use ($server, $name) {
-            $backupConfiguration = BackupHost::whereHas('nodes', function ($query) use ($server) {
+            $backupHost = BackupHost::whereHas('nodes', function ($query) use ($server) {
                 $query->where('nodes.id', $server->node_id);
             })->first();
 
-            if (!$backupConfiguration) {
+            if (!$backupHost) {
                 throw new \Exception('No backup configuration available for this server.');
             }
 
-            $adapterName = $backupConfiguration->driver;
+            $adapterName = $backupHost->driver;
 
             /** @var Backup $backup */
             $backup = Backup::query()->create([
@@ -126,12 +126,12 @@ class InitiateBackupService
                 'uuid' => Uuid::uuid4()->toString(),
                 'name' => trim($name) ?: sprintf('Backup at %s', now()->toDateTimeString()),
                 'ignored_files' => array_values($this->ignoredFiles ?? []),
-                'backup_host_id' => $backupConfiguration->id,
+                'backup_host_id' => $backupHost->id,
                 'is_locked' => $this->isLocked,
             ]);
 
             $this->daemonBackupRepository->setServer($server)
-                ->setBackupAdapter($backupConfiguration->driver)
+                ->setBackupAdapter($backupHost->driver)
                 ->backup($backup);
 
             return $backup;

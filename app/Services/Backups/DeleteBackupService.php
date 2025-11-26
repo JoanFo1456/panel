@@ -71,15 +71,15 @@ class DeleteBackupService
         $this->connection->transaction(function () use ($backup) {
             $backup->delete();
 
-            $backupConfiguration = BackupHost::whereHas('nodes', function ($query) use ($backup) {
+            $backupHost = BackupHost::whereHas('nodes', function ($query) use ($backup) {
                 $query->where('nodes.id', $backup->server->node_id);
             })->where('driver', 's3')->first();
-            if (!$backupConfiguration) {
+            if (!$backupHost) {
                 throw new Exception('No S3 backup configuration available for this server.');
             }
 
             /** @var S3Filesystem $adapter */
-            $adapter = $this->manager->adapterForBackupConfiguration($backupConfiguration);
+            $adapter = $this->manager->adapter($backupHost);
 
             /** @var S3Client $client */
             $client = $adapter->getClient();

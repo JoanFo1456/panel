@@ -34,24 +34,22 @@ class BackupManager
     /**
      * Returns a backup adapter instance for a specific backup configuration.
      */
-    public function adapterForBackupConfiguration(BackupHost $backupConfiguration): FilesystemAdapter
+    public function adapter(BackupHost $backupHost): FilesystemAdapter
     {
-        $driver = $backupConfiguration->driver;
+        $driver = $backupHost->driver;
 
         $config = [
             'adapter' => $driver === 's3' ? 's3' : 'wings',
         ];
 
-        if ($backupConfiguration->config) {
-            $hostConfig = $backupConfiguration->config;
+        if ($backupHost->config) {
+            $hostConfig = $backupHost->config;
 
             $config = array_merge($config, $hostConfig);
         }
 
-        $config['use_path_style_endpoint'] = (bool) $backupConfiguration->use_path_style_endpoint;
-        $config['use_accelerate_endpoint'] = (bool) $backupConfiguration->use_accelerate_endpoint;
 
-        $adapterName = "backup_config_{$backupConfiguration->id}_{$driver}";
+        $adapterName = "backup_config_{$backupHost->id}_{$driver}";
 
         return $this->adapters[$adapterName] ??= $this->createAdapter($config);
     }
