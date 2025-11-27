@@ -23,10 +23,7 @@ class BackupHost extends Model
         'driver',
         'config',
     ];
-    public function getPermission(string $resource): int
-    {
-        return $this->permissions[$resource] ?? AdminAcl::NONE;
-    }
+
     protected function casts(): array
     {
         return [

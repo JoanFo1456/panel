@@ -25,28 +25,28 @@ class BackupRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')
-                    ->label(trans('admin/backup.name')),
+                    ->label(trans('admin/backuphost.name')),
                 TextColumn::make('server.name')
-                    ->label(trans('admin/backup.server')),
+                    ->label(trans('admin/backuphost.server')),
                 TextColumn::make('bytes')
-                    ->label(trans('admin/backup.size'))
+                    ->label(trans('admin/backuphost.size'))
                     ->formatStateUsing(fn ($state) => convert_bytes_to_readable($state)),
                 TextColumn::make('created_at')
-                    ->label(trans('admin/backup.created_at'))
+                    ->label(trans('admin/backuphost.created_at'))
                     ->dateTime(),
                 TextColumn::make('status')
-                    ->label(trans('admin/backup.status'))
+                    ->label(trans('admin/backuphost.status'))
                     ->badge(),
                 IconColumn::make('is_locked')
                     ->boolean()
-                    ->label(trans('admin/backup.locked')),
+                    ->label(trans('admin/backuphost.locked')),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
                 Action::make('download')
-                    ->label(trans('admin/backup.download'))
+                    ->label(trans('admin/backuphost.download'))
                     ->color('primary')
                     ->icon('tabler-download')
                     ->authorize('backup.download')

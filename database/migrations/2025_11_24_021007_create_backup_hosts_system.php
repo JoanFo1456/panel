@@ -40,41 +40,6 @@ return new class extends Migration
             $table->foreignId('backup_host_id')->nullable()->after('disk')->constrained('backup_hosts')->onDelete('cascade');
         });
 
-        $this->seedBackupHosts();
-
-        $this->migrateExistingBackups();
-
-        Schema::table('backups', function (Blueprint $table) {
-            $table->dropColumn('disk');
-        });
-
-        Schema::table('backups', function (Blueprint $table) {
-            $table->foreignId('backup_host_id')->nullable(false)->change();
-        });
-    }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('backups', function (Blueprint $table) {
-            $table->string('disk')->after('backup_host_id');
-        });
-
-        $this->reverseMigrateBackups();
-
-        Schema::table('backups', function (Blueprint $table) {
-            $table->dropForeign(['backup_host_id']);
-            $table->dropColumn('backup_host_id');
-        });
-
-        Schema::dropIfExists('backup_host_node');
-        Schema::dropIfExists('backup_hosts');
-    }
-
-    private function seedBackupHosts(): void
-    {
         $nodes = Node::all();
 
         $wingsHost = BackupHost::create([
@@ -120,10 +85,7 @@ return new class extends Migration
                 $s3Host->nodes()->attach($node->id);
             }
         }
-    }
 
-    private function migrateExistingBackups(): void
-    {
         $wingsHost = BackupHost::where('driver', 'wings')->first();
         $s3Host = BackupHost::where('driver', 's3')->first();
 
@@ -141,15 +103,39 @@ return new class extends Migration
                 }
             }
         });
+
+        Schema::table('backups', function (Blueprint $table) {
+            $table->dropColumn('disk');
+        });
+
+        Schema::table('backups', function (Blueprint $table) {
+            $table->foreignId('backup_host_id')->nullable(false)->change();
+        });
     }
 
-    private function reverseMigrateBackups(): void
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
+        Schema::table('backups', function (Blueprint $table) {
+            $table->string('disk')->after('backup_host_id');
+        });
+
         Backup::with('backupHost')->chunk(100, function ($backups) {
             foreach ($backups as $backup) {
                 $disk = $backup->backupHost->driver;
                 DB::table('backups')->where('id', $backup->id)->update(['disk' => $disk]);
             }
         });
+
+        Schema::table('backups', function (Blueprint $table) {
+            $table->dropForeign(['backup_host_id']);
+            $table->dropColumn('backup_host_id');
+        });
+
+        Schema::dropIfExists('backup_host_node');
+        Schema::dropIfExists('backup_hosts');
     }
+
 };

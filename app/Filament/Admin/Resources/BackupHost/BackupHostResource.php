@@ -41,7 +41,7 @@ class BackupHostResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return trans('admin/backup.nav_title');
+        return trans('admin/backuphost.nav_title');
     }
 
     public static function getNavigationBadge(): ?string
@@ -68,13 +68,13 @@ class BackupHostResource extends Resource
                     ])
                     ->schema([
                         TextInput::make('name')
-                            ->label(trans('admin/backup.name'))
+                            ->label(trans('admin/backuphost.name'))
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->columnSpan(2),
                         ToggleButtons::make('driver')
                             ->disabled(fn ($record) => $record !== null)
-                            ->label(trans('admin/backup.backup_driver'))
+                            ->label(trans('admin/backuphost.backup_driver'))
                             ->options([
                                 'wings' => 'Wings',
                                 's3' => 'S3',
@@ -90,28 +90,28 @@ class BackupHostResource extends Resource
                             ->columnSpanFull()
                             ->schema([
                                 TextInput::make('config.bucket')
-                                    ->label(trans('admin/backup.s3_bucket'))
+                                    ->label(trans('admin/backuphost.s3_bucket'))
                                     ->required(),
                                 TextInput::make('config.region')
-                                    ->label(trans('admin/backup.s3_region'))
+                                    ->label(trans('admin/backuphost.s3_region'))
                                     ->required(),
                                 TextInput::make('config.key')
-                                    ->label(trans('admin/backup.s3_key'))
+                                    ->label(trans('admin/backuphost.s3_key'))
                                     ->required(),
                                 TextInput::make('config.secret')
-                                    ->label(trans('admin/backup.s3_secret'))
+                                    ->label(trans('admin/backuphost.s3_secret'))
                                     ->required()
                                     ->password(),
                                 TextInput::make('config.endpoint')
-                                    ->label(trans('admin/backup.s3_endpoint')),
+                                    ->label(trans('admin/backuphost.s3_endpoint')),
                                 TextInput::make('config.prefix')
-                                    ->label(trans('admin/backup.s3_prefix')),
+                                    ->label(trans('admin/backuphost.s3_prefix')),
                                 Toggle::make('config.use_path_style_endpoint')
-                                    ->label(trans('admin/backup.use_path_style_endpoint'))
+                                    ->label(trans('admin/backuphost.use_path_style_endpoint'))
                                     ->default(true)
                                     ->dehydrateStateUsing(fn ($state) => $state ? 1 : 0),
                                 Toggle::make('config.use_accelerate_endpoint')
-                                    ->label(trans('admin/backup.use_accelerate_endpoint'))
+                                    ->label(trans('admin/backuphost.use_accelerate_endpoint'))
                                     ->default(false)
                                     ->dehydrateStateUsing(fn ($state) => $state ? 1 : 0),
 
@@ -120,7 +120,7 @@ class BackupHostResource extends Resource
                             ->multiple()
                             ->searchable()
                             ->preload()
-                            ->label(trans('admin/backup.linked_nodes'))
+                            ->label(trans('admin/backuphost.linked_nodes'))
                             ->relationship('nodes', 'name', fn (Builder $query) => $query->whereIn('nodes.id', user()?->accessibleNodes()->pluck('id')))
                             ->columnSpanFull(),
                     ]),
@@ -132,10 +132,10 @@ class BackupHostResource extends Resource
                 return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label(trans('admin/backup.name'))
+                    ->label(trans('admin/backuphost.name'))
                     ->searchable(),
                 TextColumn::make('driver')
-                    ->label(trans('admin/backup.driver'))
+                    ->label(trans('admin/backuphost.driver'))
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'wings' => 'Wings',
@@ -144,8 +144,8 @@ class BackupHostResource extends Resource
                     }),
                 TextColumn::make('nodes.name')
                     ->badge()
-                    ->label(trans('admin/backup.linked_nodes'))
-                    ->placeholder(trans('admin/backup.no_nodes')),
+                    ->label(trans('admin/backuphost.linked_nodes'))
+                    ->placeholder(trans('admin/backuphost.no_nodes')),
             ])
             ->filters([
             ])
