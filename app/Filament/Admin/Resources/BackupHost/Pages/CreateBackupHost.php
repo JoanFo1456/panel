@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Admin\Resources\BackupHosts\Pages;
+namespace App\Filament\Admin\Resources\BackupHost\Pages;
 
-use App\Filament\Admin\Resources\BackupHosts\BackupHostResource;
+use App\Filament\Admin\Resources\BackupHost\BackupHostResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateBackupHost extends CreateRecord

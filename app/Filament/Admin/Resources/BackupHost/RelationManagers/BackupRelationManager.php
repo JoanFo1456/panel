@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Admin\Resources\BackupHosts\RelationManagers;
+namespace App\Filament\Admin\Resources\BackupHost\RelationManagers;
 
 use App\Enums\BackupStatus;
 use App\Models\Backup;

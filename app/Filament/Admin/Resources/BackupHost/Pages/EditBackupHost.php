@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Admin\Resources\BackupHosts\Pages;
+namespace App\Filament\Admin\Resources\BackupHost\Pages;
 
-use App\Filament\Admin\Resources\BackupHosts\BackupHostResource;
+use App\Filament\Admin\Resources\BackupHost\BackupHostResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
@@ -10,11 +10,6 @@ use Filament\Resources\Pages\EditRecord;
 class EditBackupHost extends EditRecord
 {
     protected static string $resource = BackupHostResource::class;
-
-    protected function authorizeAccess(): void
-    {
-        $this->authorize('backup_host.update');
-    }
 
     protected function getDefaultHeaderActions(): array
     {

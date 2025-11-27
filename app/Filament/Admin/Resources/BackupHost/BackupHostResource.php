@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Admin\Resources\BackupHosts;
+namespace App\Filament\Admin\Resources\BackupHost;
 
-use App\Filament\Admin\Resources\BackupHosts\Pages\CreateBackupHost;
-use App\Filament\Admin\Resources\BackupHosts\Pages\EditBackupHost;
-use App\Filament\Admin\Resources\BackupHosts\Pages\ListBackupHosts;
-use App\Filament\Admin\Resources\BackupHosts\RelationManagers\BackupRelationManager;
-use App\Filament\Admin\Resources\BackupHosts\Schemas\BackupHostForm;
-use App\Filament\Admin\Resources\BackupHosts\Tables\BackupHostsTable;
+use App\Filament\Admin\Resources\BackupHost\Pages\CreateBackupHost;
+use App\Filament\Admin\Resources\BackupHost\Pages\EditBackupHost;
+use App\Filament\Admin\Resources\BackupHost\Pages\ListBackupHosts;
+use App\Filament\Admin\Resources\BackupHost\RelationManagers\BackupRelationManager;
+use App\Filament\Admin\Resources\BackupHost\Schemas\BackupHostForm;
+use App\Filament\Admin\Resources\BackupHost\Tables\BackupHostsTable;
 use App\Models\BackupHost;
 use App\Traits\Filament\CanCustomizePages;
 use App\Traits\Filament\CanCustomizeRelations;
@@ -151,8 +151,7 @@ class BackupHostResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()
-                        ->authorize('backup_host.delete'),
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
