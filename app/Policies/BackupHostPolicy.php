@@ -6,5 +6,5 @@ class BackupHostPolicy
 {
     use DefaultPolicies;
 
-    protected string $modelName = 'backuphost';
+    protected string $modelName = 'backupHost';
 }

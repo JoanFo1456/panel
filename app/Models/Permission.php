@@ -185,11 +185,6 @@ class Permission extends Model implements Validatable
                 'icon' => 'tabler-stack',
                 'permissions' => ['read'],
             ],
-            [
-                'name' => 'backuphost',
-                'icon' => 'o-rectangle-stack',
-                'permissions' => ['read', 'create', 'update', 'delete'],
-            ],
         ];
     }
 

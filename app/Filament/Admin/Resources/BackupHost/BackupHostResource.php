@@ -24,7 +24,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,13 +37,21 @@ class BackupHostResource extends Resource
     
     protected static ?string $model = BackupHost::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-file';
 
     public static function getNavigationLabel(): string
     {
         return trans('admin/backup.nav_title');
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getEloquentQuery()->count() ?: null;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return trans('admin/dashboard.advanced');
     }
 
     public static function form(Schema $schema): Schema
@@ -120,11 +127,6 @@ class BackupHostResource extends Resource
             ]);
     }
 
-    public static function getNavigationBadge(): ?string
-    {
-        return (string) static::getEloquentQuery()->count() ?: null;
-    }
-
     public static function table(Table $table): Table
     {
                 return $table
@@ -154,11 +156,6 @@ class BackupHostResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function getNavigationGroup(): ?string
-    {
-        return trans('admin/dashboard.advanced');
     }
 
     public static function getDefaultRelations(): array
