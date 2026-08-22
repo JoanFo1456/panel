@@ -18,6 +18,12 @@ class ProcessWebhook implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
+     * Upper bound for schema requested retries. Set on the job so a released
+     * delivery survives a worker running with the default --tries=1.
+     */
+    public int $tries = 3;
+
+    /**
      * @param  array<mixed>  $data
      */
     public function __construct(
@@ -67,8 +73,10 @@ class ProcessWebhook implements ShouldQueue
             'endpoint' => $this->webhookConfiguration->endpoint,
         ]);
 
-        // Only types that ask for it are retried, so default behaviour is unchanged
-        if ($retryAfter !== null) {
+        // Only types that ask for it are retried, so default behaviour is unchanged.
+        // Every attempt performs a real POST, so the delivery row per attempt above
+        // is an audit trail, not a duplicate.
+        if ($retryAfter !== null && $this->attempts() < $this->tries) {
             $this->release($retryAfter);
         }
     }
