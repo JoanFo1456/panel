@@ -331,6 +331,70 @@ class WebhookControllerTest extends ApplicationApiIntegrationTestCase
         $this->postJson('/api/application/webhooks/' . $webhook->id . '/test')->assertForbidden();
     }
 
+    public function test_store_rejects_a_server_on_a_global_webhook(): void
+    {
+        $server = $this->createServerModel();
+
+        $response = $this->postJson('/api/application/webhooks', [
+            'name' => 'Contradictory',
+            'endpoint' => 'https://example.com/hook',
+            'scope' => WebhookScope::Global->value,
+            'server_id' => $server->id,
+            'events' => ['eloquent.created: ' . Server::class],
+        ]);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $response->assertJsonPath('errors.0.meta.source_field', 'server_id');
+    }
+
+    public function test_moving_to_the_global_scope_clears_the_server(): void
+    {
+        $server = $this->createServerModel();
+        $webhook = WebhookConfiguration::factory()->create([
+            'scope' => WebhookScope::Server,
+            'server_id' => $server->id,
+            'events' => ['server:power.start'],
+        ]);
+
+        $this->patchJson('/api/application/webhooks/' . $webhook->id, [
+            'scope' => WebhookScope::Global->value,
+            'events' => ['eloquent.created: ' . Server::class],
+        ])->assertStatus(Response::HTTP_OK);
+
+        $webhook->refresh();
+        $this->assertSame(WebhookScope::Global, $webhook->scope);
+        $this->assertNull($webhook->server_id);
+    }
+
+    public function test_an_endpoint_change_never_rewrites_the_type(): void
+    {
+        $this->app->make(WebhookTypeService::class)->register(new MatchingEndpointSchema());
+
+        $webhook = WebhookConfiguration::factory()->create([
+            'type' => WebhookTypeService::Default,
+            'events' => ['eloquent.created: ' . Server::class],
+        ]);
+
+        $this->patchJson('/api/application/webhooks/' . $webhook->id, [
+            'endpoint' => 'https://match.example.com/hook',
+        ])->assertStatus(Response::HTTP_OK);
+
+        $this->assertSame(WebhookTypeService::Default, $webhook->refresh()->type);
+    }
+
+    public function test_the_type_is_still_detected_from_the_endpoint_on_store(): void
+    {
+        $this->app->make(WebhookTypeService::class)->register(new MatchingEndpointSchema());
+
+        $this->postJson('/api/application/webhooks', [
+            'name' => 'Detected',
+            'endpoint' => 'https://match.example.com/hook',
+            'events' => ['eloquent.created: ' . Server::class],
+        ])->assertStatus(Response::HTTP_CREATED);
+
+        $this->assertSame('matching', WebhookConfiguration::query()->latest('id')->first()->type);
+    }
+
     public function test_header_keys_are_normalized_like_the_panel_forms(): void
     {
         $response = $this->postJson('/api/application/webhooks', [
@@ -413,5 +477,18 @@ class RequiredPayloadSchema extends BaseSchema
     public function getPayloadRules(): array
     {
         return ['content' => ['required', 'string']];
+    }
+}
+
+class MatchingEndpointSchema extends BaseSchema
+{
+    public function getId(): string
+    {
+        return 'matching';
+    }
+
+    public function matchesEndpoint(string $endpoint): bool
+    {
+        return str_contains($endpoint, 'match.example.com');
     }
 }

@@ -105,6 +105,10 @@ class StoreWebhookRequest extends ApplicationApiRequest
                 $validator->errors()->add('server_id', trans('validation.required', ['attribute' => 'server id']));
             }
 
+            if ($scope === WebhookScope::Global && $this->filled('server_id')) {
+                $validator->errors()->add('server_id', trans('validation.prohibited', ['attribute' => 'server id']));
+            }
+
             $allowed = array_keys(WebhookConfiguration::filamentCheckboxList($scope));
 
             foreach ((array) $this->input('events', []) as $index => $event) {

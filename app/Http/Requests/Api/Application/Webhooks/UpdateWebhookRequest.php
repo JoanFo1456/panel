@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Api\Application\Webhooks;
 
 use App\Enums\WebhookScope;
-use App\Facades\WebhookTypes;
 use App\Models\WebhookConfiguration;
 use Illuminate\Contracts\Validation\ValidationRule;
 
@@ -88,20 +87,12 @@ class UpdateWebhookRequest extends StoreWebhookRequest
     }
 
     /**
-     * The type the record would end up with. Detection from a new endpoint respects the
-     * type already stored, so validation and persistence never disagree.
+     * A stored row's type is always deliberate, including the default, so an update never
+     * re-detects it from the endpoint. Only an explicit `type` changes it.
      */
     protected function resolveType(): ?string
     {
-        if ($type = $this->scalarInput('type')) {
-            return $type;
-        }
-
-        if ($endpoint = $this->scalarInput('endpoint')) {
-            return WebhookTypes::detectFor($endpoint, $this->record()->type);
-        }
-
-        return $this->record()->type;
+        return $this->scalarInput('type') ?? $this->record()->type;
     }
 
     /**
@@ -118,8 +109,9 @@ class UpdateWebhookRequest extends StoreWebhookRequest
             $data['scope'] = $this->resolveScope();
         }
 
-        if (array_key_exists('endpoint', $data) && !array_key_exists('type', $data)) {
-            $data['type'] = $this->resolveType();
+        // A webhook that ends up global has no server, whatever the record stored before
+        if ($this->resolveScope() === WebhookScope::Global) {
+            $data['server_id'] = null;
         }
 
         return $data;
