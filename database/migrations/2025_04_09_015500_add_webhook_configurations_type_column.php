@@ -19,6 +19,11 @@ return new class extends Migration
 
         DB::table('webhook_configurations')
             ->whereNull('type')
+            ->where('endpoint', 'like', '%discord.com%')
+            ->update(['type' => 'discord']);
+
+        DB::table('webhook_configurations')
+            ->whereNull('type')
             ->update(['type' => 'regular']);
     }
 
