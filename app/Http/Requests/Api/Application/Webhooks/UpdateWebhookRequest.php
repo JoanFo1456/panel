@@ -109,12 +109,11 @@ class UpdateWebhookRequest extends StoreWebhookRequest
      * values are persisted, otherwise a record could be saved in a state its own
      * validation would reject.
      *
+     * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    public function resolvedAttributes(): array
+    protected function withDefaults(array $data): array
     {
-        $data = $this->validated();
-
         if (array_key_exists('server_id', $data) && !array_key_exists('scope', $data)) {
             $data['scope'] = $this->resolveScope();
         }

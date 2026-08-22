@@ -330,6 +330,62 @@ class WebhookControllerTest extends ApplicationApiIntegrationTestCase
         $this->getJson('/api/application/webhooks')->assertForbidden();
         $this->postJson('/api/application/webhooks/' . $webhook->id . '/test')->assertForbidden();
     }
+
+    public function test_header_keys_are_normalized_like_the_panel_forms(): void
+    {
+        $response = $this->postJson('/api/application/webhooks', [
+            'name' => 'Spaced header',
+            'endpoint' => 'https://example.com/hook',
+            'events' => ['eloquent.created: ' . Server::class],
+            'headers' => ['X Api Key' => 'value'],
+        ]);
+
+        $response->assertStatus(Response::HTTP_CREATED);
+        $this->assertSame(
+            ['X-Api-Key' => 'value'],
+            WebhookConfiguration::query()->latest('id')->first()->headers
+        );
+    }
+
+    public function test_header_keys_are_normalized_on_update_too(): void
+    {
+        $webhook = WebhookConfiguration::factory()->create([
+            'events' => ['eloquent.created: ' . Server::class],
+        ]);
+
+        $response = $this->patchJson('/api/application/webhooks/' . $webhook->id, [
+            'headers' => ['X Api Key' => 'value'],
+        ]);
+
+        $response->assertStatus(Response::HTTP_OK);
+        $this->assertSame(['X-Api-Key' => 'value'], $webhook->refresh()->headers);
+    }
+
+    public function test_invalid_header_names_are_rejected(): void
+    {
+        $response = $this->postJson('/api/application/webhooks', [
+            'name' => 'Header injection',
+            'endpoint' => 'https://example.com/hook',
+            'events' => ['eloquent.created: ' . Server::class],
+            'headers' => ["X-Evil\r\nInjected" => 'value'],
+        ]);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $response->assertJsonPath('errors.0.meta.source_field', 'headers');
+    }
+
+    public function test_header_values_with_crlf_are_rejected(): void
+    {
+        $response = $this->postJson('/api/application/webhooks', [
+            'name' => 'Value injection',
+            'endpoint' => 'https://example.com/hook',
+            'events' => ['eloquent.created: ' . Server::class],
+            'headers' => ['X-Foo' => "value\r\nInjected: 1"],
+        ]);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $response->assertJsonPath('errors.0.meta.source_field', 'headers.X-Foo');
+    }
 }
 
 class LimitedPayloadSchema extends BaseSchema

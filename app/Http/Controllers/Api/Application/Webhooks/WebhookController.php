@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\Application\Webhooks;
 
-use App\Enums\WebhookScope;
 use App\Extensions\Webhooks\Schemas\WebhookSchemaInterface;
 use App\Facades\WebhookTypes;
 use App\Http\Controllers\Api\Application\ApplicationApiController;
@@ -62,10 +61,8 @@ class WebhookController extends ApplicationApiController
      */
     public function store(StoreWebhookRequest $request): JsonResponse
     {
-        $data = $this->withDefaults($request->validated());
-
         $webhook = new WebhookConfiguration();
-        $webhook->fill($data)->saveOrFail();
+        $webhook->fill($request->resolvedAttributes())->saveOrFail();
 
         return $this->fractal->item($webhook->fresh())
             ->transformWith($this->getTransformer(WebhookConfigurationTransformer::class))
@@ -175,17 +172,4 @@ class WebhookController extends ApplicationApiController
         ];
     }
 
-    /**
-     * Fills in the scope and type the panel would otherwise derive from the form.
-     *
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    private function withDefaults(array $data): array
-    {
-        $data['scope'] ??= isset($data['server_id']) ? WebhookScope::Server : WebhookScope::Global;
-        $data['type'] ??= WebhookTypes::detect($data['endpoint'] ?? null);
-
-        return $data;
-    }
 }

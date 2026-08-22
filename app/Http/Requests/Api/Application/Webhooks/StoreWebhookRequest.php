@@ -7,6 +7,7 @@ use App\Facades\WebhookTypes;
 use App\Http\Requests\Api\Application\ApplicationApiRequest;
 use App\Models\WebhookConfiguration;
 use App\Services\Acl\Api\AdminAcl;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -78,8 +79,16 @@ class StoreWebhookRequest extends ApplicationApiRequest
             'events' => ['required', 'array', 'min:1'],
             'events.*' => ['required', 'string'],
             'payload' => ['nullable', 'array'],
-            'headers' => ['nullable', 'array'],
-            'headers.*' => ['string'],
+            // Header names are restricted to RFC 7230 token characters plus space, which
+            // normalizes to a dash on save, so CRLF injection is rejected at the boundary
+            'headers' => ['nullable', 'array', function (string $attribute, mixed $value, Closure $fail) {
+                foreach (array_keys((array) $value) as $name) {
+                    if (!preg_match('/\A[A-Za-z0-9 !#$%&\'*+.^_`|~-]+\z/', (string) $name)) {
+                        $fail("The $attribute field contains an invalid header name.");
+                    }
+                }
+            }],
+            'headers.*' => ['string', 'regex:/\A[^\r\n]*\z/'],
         ];
     }
 
@@ -121,12 +130,34 @@ class StoreWebhookRequest extends ApplicationApiRequest
     }
 
     /**
-     * Attributes to persist. Overridden on update to keep scope and type consistent.
+     * Attributes to persist. The resolved type's schema normalizes them the same way the
+     * panel forms do before saving, header keys rewritten space to dash for example.
      *
      * @return array<string, mixed>
      */
     public function resolvedAttributes(): array
     {
-        return $this->validated();
+        $data = $this->withDefaults($this->validated());
+
+        if ($schema = WebhookTypes::get($data['type'] ?? $this->resolveType())) {
+            $data = $schema->mutateFormDataBeforeSave($data);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Fills in the scope and type the panel would otherwise derive from the form.
+     * Overridden on update to keep scope and type consistent with the stored record.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function withDefaults(array $data): array
+    {
+        $data['scope'] ??= $this->resolveScope();
+        $data['type'] ??= $this->resolveType();
+
+        return $data;
     }
 }
