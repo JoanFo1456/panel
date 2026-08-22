@@ -174,7 +174,7 @@ class WebhookResource extends Resource
                                         TextInput::make('endpoint')
                                             ->label(trans('admin/webhook.endpoint'))
                                             ->required()
-                                            ->url()
+                                            ->live(onBlur: true)
                                             ->afterStateUpdated(fn (?string $state, Get $get, Set $set) => $set('type', WebhookTypes::detectFor($state, $get('type')))),
                                     ]),
                             ]),
