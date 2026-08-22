@@ -65,7 +65,7 @@ class StoreWebhookRequest extends ApplicationApiRequest
         return is_scalar($value) && filled($value) ? (string) $value : null;
     }
 
-    /** @return array<string, string|array<string|\Stringable|ValidationRule>> */
+    /** @return array<string, string|array<string|\Stringable|ValidationRule|Closure>> */
     protected function baseRules(): array
     {
         return [
