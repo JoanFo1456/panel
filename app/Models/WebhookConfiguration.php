@@ -391,34 +391,40 @@ class WebhookConfiguration extends Model
     /** @return string[] */
     public static function discoverModels(): array
     {
-        $namespace = 'App\\Models\\';
-        $directory = app_path('Models');
+        // The filesystem scan is memoized per request: this runs on every webhook API
+        // write, and allPossibleAdminOnlyEvents() alone needs it twice
+        return once(function () {
+            $namespace = 'App\\Models\\';
+            $directory = app_path('Models');
 
-        $models = [];
-        foreach (File::allFiles($directory) as $file) {
-            $models[] = $namespace . str($file->getFilename())
-                ->replace([DIRECTORY_SEPARATOR, '.php'], ['\\', '']);
-        }
+            $models = [];
+            foreach (File::allFiles($directory) as $file) {
+                $models[] = $namespace . str($file->getFilename())
+                    ->replace([DIRECTORY_SEPARATOR, '.php'], ['\\', '']);
+            }
 
-        return $models;
+            return $models;
+        });
     }
 
     /** @return string[] */
     public static function discoverCustomEvents(): array
     {
-        $directory = app_path('Events');
+        return once(function () {
+            $directory = app_path('Events');
 
-        $events = [];
-        foreach (File::allFiles($directory) as $file) {
-            $namespace = str($file->getPath())
-                ->after(base_path())
-                ->replace([DIRECTORY_SEPARATOR, '\\app\\'], ['\\', 'App\\']);
+            $events = [];
+            foreach (File::allFiles($directory) as $file) {
+                $namespace = str($file->getPath())
+                    ->after(base_path())
+                    ->replace([DIRECTORY_SEPARATOR, '\\app\\'], ['\\', 'App\\']);
 
-            $events[] = $namespace . '\\' . str($file->getFilename())
-                ->replace([DIRECTORY_SEPARATOR, '.php'], ['\\', '']);
-        }
+                $events[] = $namespace . '\\' . str($file->getFilename())
+                    ->replace([DIRECTORY_SEPARATOR, '.php'], ['\\', '']);
+            }
 
-        return $events;
+            return $events;
+        });
     }
 
     /**
