@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Extensions\Webhooks\Schemas\FallbackSchema;
 use App\Extensions\Webhooks\WebhookTypeService;
 use App\Models\WebhookConfiguration;
 use Exception;
@@ -11,7 +12,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Http;
 
 class ProcessWebhook implements ShouldQueue
 {
@@ -28,33 +28,22 @@ class ProcessWebhook implements ShouldQueue
 
     public function handle(WebhookTypeService $webhookTypeService): void
     {
-        $data = $this->data[0] ?? [];
-        if (count($data) === 1) {
-            $data = reset($data);
-        }
-
-        $data = $this->normalizeData($data);
+        $data = $this->normalizeData($this->data[0] ?? []);
         $data['event'] = $this->webhookConfiguration->transformClassName($this->eventName);
 
-        $schema = $webhookTypeService->get($this->webhookConfiguration->type);
+        // A type without a registered schema still delivers with its stored template
+        $schema = $webhookTypeService->get($this->webhookConfiguration->type) ?? new FallbackSchema();
 
-        if ($schema) {
-            $payload = $schema->preparePayload($this->webhookConfiguration, $data);
-            $headers = $schema->prepareHeaders($this->webhookConfiguration, $payload, $data);
-        } else {
-            $payload = $this->replaceStoredPayloadVars($data);
-            $headers = [];
-        }
+        $payload = $schema->preparePayload($this->webhookConfiguration, $data);
+        $headers = $schema->prepareHeaders($this->webhookConfiguration, $payload, $data);
 
         $retryAfter = null;
 
         try {
             // The type owns the request, so it is free to change the verb, encoding or timeout
-            $response = $schema
-                ? $schema->deliver($this->webhookConfiguration, $payload, $headers)
-                : Http::withHeaders($headers)->post($this->webhookConfiguration->endpoint, $payload);
+            $response = $schema->deliver($this->webhookConfiguration, $payload, $headers);
 
-            $successful = ($schema?->wasSuccessful($response) ?? $response->successful()) ? now() : null;
+            $successful = $schema->wasSuccessful($response) ? now() : null;
 
             if (!$successful) {
                 report(sprintf(
@@ -64,10 +53,10 @@ class ProcessWebhook implements ShouldQueue
                     $response->status(),
                 ));
 
-                $retryAfter = $schema?->retryAfter($response);
+                $retryAfter = $schema->retryAfter($response);
             }
         } catch (Exception $exception) {
-            report($exception->getMessage());
+            report($exception);
             $successful = null;
         }
 
@@ -91,24 +80,6 @@ class ProcessWebhook implements ShouldQueue
     private function redactedEndpoint(): string
     {
         return parse_url($this->webhookConfiguration->endpoint, PHP_URL_HOST) ?: 'unknown host';
-    }
-
-    /**
-     * @param  array<mixed>  $data
-     * @return array<mixed>
-     */
-    private function replaceStoredPayloadVars(array $data): array
-    {
-        if (blank($this->webhookConfiguration->payload)) {
-            return $data;
-        }
-
-        $payload = json_encode($this->webhookConfiguration->payload);
-        if ($payload === false) {
-            return $data;
-        }
-
-        return json_decode($this->webhookConfiguration->replaceVars($data, $payload), true) ?? $data;
     }
 
     /** @return array<mixed> */

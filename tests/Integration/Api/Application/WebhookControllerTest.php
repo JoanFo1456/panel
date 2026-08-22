@@ -173,6 +173,22 @@ class WebhookControllerTest extends ApplicationApiIntegrationTestCase
         $this->assertDatabaseCount(Webhook::class, 1);
     }
 
+    public function test_a_test_webhook_accepts_arbitrary_data_shapes(): void
+    {
+        $webhook = WebhookConfiguration::factory()->create([
+            'events' => ['eloquent.created: ' . Server::class],
+        ]);
+
+        Http::fake([$webhook->endpoint => Http::response()]);
+
+        $response = $this->postJson('/api/application/webhooks/' . $webhook->id . '/test', [
+            'data' => ['hello'],
+        ]);
+
+        $response->assertStatus(Response::HTTP_ACCEPTED);
+        $this->assertDatabaseCount(Webhook::class, 1);
+    }
+
     public function test_it_enforces_the_payload_rules_a_type_declares(): void
     {
         $this->app->make(WebhookTypeService::class)->register(new LimitedPayloadSchema());
