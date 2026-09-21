@@ -170,9 +170,6 @@ class PluginResource extends Resource
                         ->icon(TablerIcon::Check)
                         ->color('success')
                         ->visible(fn (Plugin $plugin) => $plugin->canEnable())
-                        ->requiresConfirmation(fn (Plugin $plugin, PluginService $pluginService) => $plugin->isTheme() && $pluginService->hasThemePluginEnabled())
-                        ->modalHeading(fn (Plugin $plugin, PluginService $pluginService) => $plugin->isTheme() && $pluginService->hasThemePluginEnabled() ? trans('admin/plugin.enable_theme_modal.heading') : null)
-                        ->modalDescription(fn (Plugin $plugin, PluginService $pluginService) => $plugin->isTheme() && $pluginService->hasThemePluginEnabled() ? trans('admin/plugin.enable_theme_modal.description') : null)
                         ->action(function (Plugin $plugin, $livewire, PluginService $pluginService) {
                             $pluginService->enablePlugin($plugin);
 

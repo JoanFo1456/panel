@@ -21,6 +21,8 @@ return [
         'debug_mode' => 'Debug Mode',
         'navigation' => 'Navigation',
         'default_navigation' => 'Default Navigation Type',
+        'default_theme' => 'Default Theme',
+        'default_theme_help' => 'The theme used on the login page and by users who have not picked one themselves.',
         'sidebar' => 'Sidebar',
         'topbar' => 'Topbar',
         'mixed' => 'Mixed',

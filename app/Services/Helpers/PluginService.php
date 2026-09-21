@@ -4,11 +4,11 @@ namespace App\Services\Helpers;
 
 use App\Enums\PluginStatus;
 use App\Exceptions\Service\InvalidFileUploadException;
+use App\Filament\Themes\ThemedPanel;
 use App\Models\Plugin;
 use Composer\Autoload\ClassLoader;
 use Exception;
 use Filament\Facades\Filament;
-use Filament\Panel;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
@@ -139,7 +139,7 @@ class PluginService
         }
     }
 
-    public function loadPanelPlugins(Panel $panel): void
+    public function loadPanelPlugins(ThemedPanel $panel): void
     {
         // Don't load any plugins during tests
         if ($this->app->runningUnitTests()) {
@@ -157,7 +157,13 @@ class PluginService
 
                 throw_unless(class_exists($pluginClass), new Exception('Class "' . $pluginClass . '" not found'));
 
-                $panel->plugin(new $pluginClass());
+                $pluginObject = new $pluginClass();
+
+                if ($plugin->isTheme()) {
+                    $panel->themePlugin($plugin->id, $plugin->name, $pluginObject);
+                } else {
+                    $panel->plugin($pluginObject);
+                }
 
                 if ($plugin->status === PluginStatus::Errored) {
                     $this->enablePlugin($plugin);
@@ -547,18 +553,6 @@ class PluginService
                 'load_order' => $i,
             ]);
         }
-    }
-
-    public function hasThemePluginEnabled(): bool
-    {
-        $plugins = Plugin::orderBy('load_order')->get();
-        foreach ($plugins as $plugin) {
-            if ($plugin->isTheme() && $plugin->status === PluginStatus::Enabled) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /** @return string[] */

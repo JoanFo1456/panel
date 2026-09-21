@@ -5,14 +5,17 @@ namespace App\Providers\Filament;
 use App\Enums\CustomizationKey;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Themes\ThemedPanel;
 use App\Http\Middleware\LanguageMiddleware;
 use App\Http\Middleware\PreventRequestForgery;
 use App\Http\Middleware\RedirectIfNotInstalled;
 use App\Http\Middleware\RequireTwoFactorAuthentication;
 use App\Http\Middleware\SetSecurityHeaders;
+use App\Services\Helpers\PluginService;
 use Filament\Actions\Action;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Auth\MultiFactor\Email\EmailAuthentication;
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -27,6 +30,19 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 abstract class PanelProvider extends BasePanelProvider
 {
+    public function register(): void
+    {
+        Filament::registerPanel(function (): Panel {
+            $panel = ThemedPanel::make();
+
+            $this->panel($panel);
+
+            $this->app->make(PluginService::class)->loadPanelPlugins($panel);
+
+            return $panel;
+        });
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
