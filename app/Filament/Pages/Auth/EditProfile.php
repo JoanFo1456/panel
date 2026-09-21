@@ -4,7 +4,6 @@ namespace App\Filament\Pages\Auth;
 
 use App\Enums\CustomizationKey;
 use App\Enums\TablerIcon;
-use App\Filament\Themes\ThemedPanel;
 use App\Extensions\OAuth\OAuthService;
 use App\Facades\Activity;
 use App\Models\ActivityLog;
@@ -493,6 +492,7 @@ class EditProfile extends BaseEditProfile
                             Select::make('theme')
                                 ->label(trans('profile.theme'))
                                 ->options(fn (ThemeService $themeService) => $themeService->getThemeOptions())
+                                ->placeholder(trans('profile.default_theme'))
                                 ->selectablePlaceholder(false)
                                 ->visible(fn (ThemeService $themeService) => $themeService->getThemes() !== []),
                         ]),
@@ -659,7 +659,7 @@ class EditProfile extends BaseEditProfile
         $data['console_rows'] = (int) $this->getUser()->getCustomization(CustomizationKey::ConsoleRows);
         $data['console_graph_period'] = (int) $this->getUser()->getCustomization(CustomizationKey::ConsoleGraphPeriod);
         $data['dashboard_layout'] = $this->getUser()->getCustomization(CustomizationKey::DashboardLayout);
-        $data['theme'] = $this->getUser()->getCustomization(CustomizationKey::Theme) ?: ThemedPanel::None;
+        $data['theme'] = $this->getUser()->getCustomization(CustomizationKey::Theme);
         $data['button_style'] = $this->getUser()->getCustomization(CustomizationKey::ButtonStyle);
         $data['redirect_to_admin'] = $this->getUser()->getCustomization(CustomizationKey::RedirectToAdmin);
 
