@@ -26,7 +26,7 @@ enum CustomizationKey: string
             self::ConsoleGraphPeriod => 30,
             self::TopNavigation => config('panel.filament.default-navigation', 'sidebar'),
             self::DashboardLayout => 'grid',
-            self::Theme => '',
+            self::Theme => config('panel.filament.default-theme'),
             self::ButtonStyle => true,
             self::RedirectToAdmin => false,
             // 0 means "unset", the table falls back to its contextual default (see ListServers).

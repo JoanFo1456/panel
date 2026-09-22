@@ -28,6 +28,12 @@ return [
     'change_load_order' => 'Change load order',
     'apply_load_order' => 'Apply load order',
 
+    'enable_theme_modal' => [
+        'heading' => 'Enable theme',
+        'description' => 'Should this theme also become the default theme?',
+        'set_as_default' => 'Set as default theme',
+    ],
+
     'status_enum' => [
         'not_installed' => 'Not Installed',
         'disabled' => 'Disabled',

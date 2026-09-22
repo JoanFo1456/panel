@@ -10,12 +10,14 @@ use App\Jobs\Plugin\UninstallPlugin;
 use App\Jobs\Plugin\UpdatePlugin;
 use App\Models\Plugin;
 use App\Services\Helpers\PluginService;
+use App\Services\Helpers\ThemeService;
 use BackedEnum;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -170,8 +172,19 @@ class PluginResource extends Resource
                         ->icon(TablerIcon::Check)
                         ->color('success')
                         ->visible(fn (Plugin $plugin) => $plugin->canEnable())
-                        ->action(function (Plugin $plugin, $livewire, PluginService $pluginService) {
+                        ->modalHidden(fn (Plugin $plugin) => !$plugin->isTheme())
+                        ->modalHeading(fn () => trans('admin/plugin.enable_theme_modal.heading'))
+                        ->modalDescription(fn () => trans('admin/plugin.enable_theme_modal.description'))
+                        ->schema([
+                            Toggle::make('set_as_default')
+                                ->label(trans('admin/plugin.enable_theme_modal.set_as_default')),
+                        ])
+                        ->action(function (Plugin $plugin, array $data, $livewire, PluginService $pluginService, ThemeService $themeService) {
                             $pluginService->enablePlugin($plugin);
+
+                            if ($data['set_as_default'] ?? false) {
+                                $themeService->setDefaultTheme($plugin->id);
+                            }
 
                             redirect(ListPlugins::getUrl(['tab' => $livewire->activeTab]));
 

@@ -6,7 +6,6 @@ use App\Enums\TablerIcon;
 use App\Extensions\Avatar\AvatarService;
 use App\Extensions\Captcha\CaptchaService;
 use App\Extensions\OAuth\OAuthService;
-use App\Filament\Themes\ThemedPanel;
 use App\Notifications\MailTested;
 use App\Services\Helpers\ThemeService;
 use App\Traits\EnvironmentWriterTrait;
@@ -236,9 +235,10 @@ class Settings extends Page implements HasSchemas
                 ->label(trans('admin/setting.general.default_theme'))
                 ->hintIcon(TablerIcon::QuestionMark, trans('admin/setting.general.default_theme_help'))
                 ->options($this->themeService->getThemeOptions())
+                ->placeholder(trans('profile.default_theme'))
                 ->selectablePlaceholder(false)
                 ->visible(fn () => $this->themeService->getThemes() !== [])
-                ->default(env('FILAMENT_DEFAULT_THEME') ?: config('panel.filament.default-theme') ?: ThemedPanel::None),
+                ->default(config('panel.filament.default-theme')),
             ToggleButtons::make('APP_2FA_REQUIRED')
                 ->label(trans('admin/setting.general.2fa_requirement'))
                 ->inline()

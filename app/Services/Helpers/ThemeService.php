@@ -2,45 +2,67 @@
 
 namespace App\Services\Helpers;
 
+use App\Contracts\Plugins\HasTheme;
 use App\Enums\CustomizationKey;
-use App\Filament\Themes\ThemedPanel;
-use App\Models\User;
+use App\Models\Plugin;
+use App\Traits\EnvironmentWriterTrait;
 use Filament\Facades\Filament;
+use Filament\Panel;
 
 class ThemeService
 {
+    use EnvironmentWriterTrait;
+
+    public const None = 'none';
+
     /** @return array<string, string> */
     public function getThemes(): array
     {
-        return $this->getPanel()?->getThemes() ?? [];
-    }
-
-    public function getActiveThemeId(): ?string
-    {
-        return $this->getPanel()?->getActiveThemeId();
+        return Plugin::query()
+            ->themes()
+            ->get()
+            ->filter(fn (Plugin $plugin) => $this->isTheme($plugin->id))
+            ->mapWithKeys(fn (Plugin $plugin) => [$plugin->id => $plugin->name])
+            ->all();
     }
 
     /** @return array<string, string> */
     public function getThemeOptions(): array
     {
-        return [ThemedPanel::None => trans('profile.default_theme')] + $this->getThemes();
+        return [self::None => trans('profile.default_theme')] + $this->getThemes();
     }
 
-    public function getSelectedThemeId(?User $user): string
+    public function getActiveThemeId(): ?string
     {
-        $preference = $user?->getCustomization(CustomizationKey::Theme);
+        $themeId = user()?->getCustomization(CustomizationKey::Theme) ?? config('panel.filament.default-theme');
 
-        if (is_string($preference) && array_key_exists($preference, $this->getThemes())) {
-            return $preference;
-        }
-
-        return $this->getActiveThemeId() ?? ThemedPanel::None;
+        return is_string($themeId) && $this->isTheme($themeId) ? $themeId : null;
     }
 
-    private function getPanel(): ?ThemedPanel
+    public function getSelectedOption(): string
     {
-        $panel = Filament::getCurrentOrDefaultPanel();
+        return $this->getActiveThemeId() ?? self::None;
+    }
 
-        return $panel instanceof ThemedPanel ? $panel : null;
+    public function isActive(string $themeId): bool
+    {
+        return $this->getActiveThemeId() === $themeId;
+    }
+
+    public function setDefaultTheme(string $themeId): void
+    {
+        $this->writeToEnvironment(['FILAMENT_DEFAULT_THEME' => $themeId]);
+    }
+
+    private function isTheme(string $themeId): bool
+    {
+        $panel = $this->getPanel();
+
+        return $panel->hasPlugin($themeId) && $panel->getPlugin($themeId) instanceof HasTheme;
+    }
+
+    private function getPanel(): Panel
+    {
+        return Filament::getCurrentOrDefaultPanel();
     }
 }

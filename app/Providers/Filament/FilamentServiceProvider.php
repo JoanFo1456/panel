@@ -5,7 +5,6 @@ namespace App\Providers\Filament;
 use App\Enums\CustomizationKey;
 use App\Enums\TablerIcon;
 use App\Livewire\Passkeys;
-use App\Services\Helpers\ThemeService;
 use Filament\Actions\Action;
 use Filament\Actions\AssociateAction;
 use Filament\Actions\CreateAction;
@@ -61,13 +60,6 @@ class FilamentServiceProvider extends ServiceProvider
         FilamentView::registerRenderHook(
             PanelsRenderHook::PAGE_START,
             fn () => Blade::render('@livewire(\App\Livewire\AlertBannerContainer::class)'),
-        );
-
-        FilamentView::registerRenderHook(
-            PanelsRenderHook::USER_MENU_PROFILE_AFTER,
-            fn (ThemeService $themeService) => $themeService->getThemes() === []
-                ? ''
-                : Blade::render('@livewire(\App\Livewire\ThemeSwitcher::class)'),
         );
 
         $appName = config('app.name', 'Pelican');

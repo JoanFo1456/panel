@@ -4,11 +4,11 @@ namespace App\Services\Helpers;
 
 use App\Enums\PluginStatus;
 use App\Exceptions\Service\InvalidFileUploadException;
-use App\Filament\Themes\ThemedPanel;
 use App\Models\Plugin;
 use Composer\Autoload\ClassLoader;
 use Exception;
 use Filament\Facades\Filament;
+use Filament\Panel;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
@@ -139,7 +139,7 @@ class PluginService
         }
     }
 
-    public function loadPanelPlugins(ThemedPanel $panel): void
+    public function loadPanelPlugins(Panel $panel): void
     {
         // Don't load any plugins during tests
         if ($this->app->runningUnitTests()) {
@@ -157,13 +157,7 @@ class PluginService
 
                 throw_unless(class_exists($pluginClass), new Exception('Class "' . $pluginClass . '" not found'));
 
-                $pluginObject = new $pluginClass();
-
-                if ($plugin->isTheme()) {
-                    $panel->themePlugin($plugin->id, $plugin->name, $pluginObject);
-                } else {
-                    $panel->plugin($pluginObject);
-                }
+                $panel->plugin(new $pluginClass());
 
                 if ($plugin->status === PluginStatus::Errored) {
                     $this->enablePlugin($plugin);
