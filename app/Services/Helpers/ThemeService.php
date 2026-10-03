@@ -13,6 +13,8 @@ class ThemeService
 {
     use EnvironmentWriterTrait;
 
+    public const Default = 'default';
+
     public const None = 'none';
 
     /** @return array<string, string> */
@@ -29,19 +31,31 @@ class ThemeService
     /** @return array<string, string> */
     public function getThemeOptions(): array
     {
-        return [self::None => trans('profile.default_theme')] + $this->getThemes();
+        return [self::None => trans('profile.no_theme')] + $this->getThemes();
+    }
+
+    /** @return array<string, string> */
+    public function getUserThemeOptions(): array
+    {
+        return [self::Default => trans('profile.default_theme')] + $this->getThemeOptions();
     }
 
     public function getActiveThemeId(): ?string
     {
-        $themeId = user()?->getCustomization(CustomizationKey::Theme) ?? config('panel.filament.default-theme');
+        $themeId = user()?->getCustomization(CustomizationKey::Theme) ?? self::Default;
+
+        if ($themeId === self::Default) {
+            $themeId = config('panel.filament.default-theme');
+        }
 
         return is_string($themeId) && $this->isTheme($themeId) ? $themeId : null;
     }
 
     public function getSelectedOption(): string
     {
-        return $this->getActiveThemeId() ?? self::None;
+        $themeId = user()?->getCustomization(CustomizationKey::Theme);
+
+        return is_string($themeId) && array_key_exists($themeId, $this->getUserThemeOptions()) ? $themeId : self::Default;
     }
 
     public function isActive(string $themeId): bool

@@ -235,7 +235,6 @@ class Settings extends Page implements HasSchemas
                 ->label(trans('admin/setting.general.default_theme'))
                 ->hintIcon(TablerIcon::QuestionMark, trans('admin/setting.general.default_theme_help'))
                 ->options($this->themeService->getThemeOptions())
-                ->placeholder(trans('profile.default_theme'))
                 ->selectablePlaceholder(false)
                 ->visible(fn () => $this->themeService->getThemes() !== [])
                 ->default(config('panel.filament.default-theme')),

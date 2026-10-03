@@ -13,7 +13,7 @@ class UpdateThemeController extends Controller
     public function __invoke(Request $request, ThemeService $themeService): RedirectResponse
     {
         $data = $request->validate([
-            'theme' => ['required', 'string', Rule::in(array_keys($themeService->getThemeOptions()))],
+            'theme' => ['required', 'string', Rule::in(array_keys($themeService->getUserThemeOptions()))],
         ]);
 
         user()?->setCustomization(CustomizationKey::Theme, $data['theme']);

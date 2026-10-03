@@ -73,6 +73,16 @@ class ThemeTest extends TestCase
         $this->assertNull($this->activeThemeId());
     }
 
+    public function test_a_user_can_go_back_to_the_global_default(): void
+    {
+        config()->set('panel.filament.default-theme', 'beta');
+
+        $this->panel();
+        $this->actingAsUserWithTheme(ThemeService::Default);
+
+        $this->assertSame('beta', $this->activeThemeId());
+    }
+
     public function test_an_uninstalled_theme_is_ignored(): void
     {
         $this->panel();

@@ -491,8 +491,7 @@ class EditProfile extends BaseEditProfile
                                 ]),
                             Select::make('theme')
                                 ->label(trans('profile.theme'))
-                                ->options(fn (ThemeService $themeService) => $themeService->getThemeOptions())
-                                ->placeholder(trans('profile.default_theme'))
+                                ->options(fn (ThemeService $themeService) => $themeService->getUserThemeOptions())
                                 ->selectablePlaceholder(false)
                                 ->visible(fn (ThemeService $themeService) => $themeService->getThemes() !== []),
                         ]),

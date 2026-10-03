@@ -172,13 +172,13 @@ class PluginResource extends Resource
                         ->icon(TablerIcon::Check)
                         ->color('success')
                         ->visible(fn (Plugin $plugin) => $plugin->canEnable())
-                        ->modalHidden(fn (Plugin $plugin) => !$plugin->isTheme())
-                        ->modalHeading(fn () => trans('admin/plugin.enable_theme_modal.heading'))
-                        ->modalDescription(fn () => trans('admin/plugin.enable_theme_modal.description'))
-                        ->schema([
+                        ->requiresConfirmation(fn (Plugin $plugin, PluginService $pluginService) => $plugin->isTheme() && !$plugin->isSwitchableTheme() && $pluginService->hasThemePluginEnabled())
+                        ->modalHeading(fn (Plugin $plugin) => $plugin->isSwitchableTheme() ? trans('admin/plugin.default_theme_modal.heading') : trans('admin/plugin.enable_theme_modal.heading'))
+                        ->modalDescription(fn (Plugin $plugin) => $plugin->isSwitchableTheme() ? trans('admin/plugin.default_theme_modal.description') : trans('admin/plugin.enable_theme_modal.description'))
+                        ->schema(fn (Plugin $plugin) => $plugin->isSwitchableTheme() ? [
                             Toggle::make('set_as_default')
-                                ->label(trans('admin/plugin.enable_theme_modal.set_as_default')),
-                        ])
+                                ->label(trans('admin/plugin.default_theme_modal.set_as_default')),
+                        ] : null)
                         ->action(function (Plugin $plugin, array $data, $livewire, PluginService $pluginService, ThemeService $themeService) {
                             $pluginService->enablePlugin($plugin);
 

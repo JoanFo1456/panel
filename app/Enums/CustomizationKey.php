@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use App\Services\Helpers\ThemeService;
+
 enum CustomizationKey: string
 {
     case ConsoleRows = 'console_rows';
@@ -26,7 +28,7 @@ enum CustomizationKey: string
             self::ConsoleGraphPeriod => 30,
             self::TopNavigation => config('panel.filament.default-navigation', 'sidebar'),
             self::DashboardLayout => 'grid',
-            self::Theme => config('panel.filament.default-theme'),
+            self::Theme => ThemeService::Default,
             self::ButtonStyle => true,
             self::RedirectToAdmin => false,
             // 0 means "unset", the table falls back to its contextual default (see ListServers).

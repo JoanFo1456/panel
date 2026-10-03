@@ -549,6 +549,18 @@ class PluginService
         }
     }
 
+    public function hasThemePluginEnabled(): bool
+    {
+        $plugins = Plugin::orderBy('load_order')->get();
+        foreach ($plugins as $plugin) {
+            if ($plugin->isTheme() && !$plugin->isSwitchableTheme() && $plugin->status === PluginStatus::Enabled) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** @return string[] */
     public function getPluginLanguages(): array
     {

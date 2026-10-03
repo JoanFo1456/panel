@@ -74,7 +74,7 @@ abstract class PanelProvider extends BasePanelProvider
             ])
             ->authenticatedRoutes(fn () => Route::post('theme', UpdateThemeController::class)->name('theme'))
             ->renderHook(PanelsRenderHook::USER_MENU_PROFILE_AFTER, fn (ThemeService $themeService) => $themeService->getThemes() === [] ? '' : view('filament.components.theme-select', [
-                'themes' => $themeService->getThemeOptions(),
+                'themes' => $themeService->getUserThemeOptions(),
                 'selected' => $themeService->getSelectedOption(),
             ]))
             ->login(Login::class)

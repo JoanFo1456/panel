@@ -22,7 +22,7 @@ return [
         'navigation' => 'Navigation',
         'default_navigation' => 'Default Navigation Type',
         'default_theme' => 'Default Theme',
-        'default_theme_help' => 'The theme users who have not picked one themselves sees.',
+        'default_theme_help' => 'The theme users who have not picked one themselves see.',
         'sidebar' => 'Sidebar',
         'topbar' => 'Topbar',
         'mixed' => 'Mixed',

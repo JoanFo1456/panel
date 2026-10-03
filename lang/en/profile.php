@@ -73,6 +73,7 @@ return [
     'button_style' => 'Button Style',
     'theme' => 'Theme',
     'default_theme' => 'Default Theme',
+    'no_theme' => 'No Theme',
     'icon' => 'Icon',
     'icon_button' => 'Icon Button',
     'redirect_to_admin' => 'Redirect to Admin on Login',
