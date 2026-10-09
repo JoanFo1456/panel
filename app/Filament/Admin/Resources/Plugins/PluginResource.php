@@ -174,14 +174,14 @@ class PluginResource extends Resource
                         ->icon(TablerIcon::Check)
                         ->color('success')
                         ->visible(fn (Plugin $plugin) => $plugin->canEnable())
-                        ->modalHidden(fn (Plugin $plugin) => !$plugin->isSwitchableTheme())
+                        ->modalHidden(fn (Plugin $plugin) => !$plugin->isSwitchableTheme() || !user()?->can('update settings'))
                         ->modalHeading(trans('admin/plugin.default_theme_modal.heading'))
                         ->modalDescription(trans('admin/plugin.default_theme_modal.description'))
-                        ->schema(fn (Plugin $plugin) => $plugin->isSwitchableTheme() ? static::defaultThemeSchema() : null)
+                        ->schema(fn (Plugin $plugin) => $plugin->isSwitchableTheme() && user()?->can('update settings') ? static::defaultThemeSchema() : null)
                         ->action(function (Plugin $plugin, array $data, $livewire, PluginService $pluginService, ThemeService $themeService) {
                             $pluginService->enablePlugin($plugin);
 
-                            if ($data['set_as_default'] ?? false) {
+                            if (($data['set_as_default'] ?? false) && user()?->can('update settings')) {
                                 $themeService->setDefaultTheme($plugin->id, (bool) ($data['force_theme'] ?? false));
                             }
 
@@ -194,7 +194,7 @@ class PluginResource extends Resource
                         }),
                     Action::make('exclude_set_default_theme')
                         ->label(trans('admin/plugin.set_default_theme'))
-                        ->authorize(fn (Plugin $plugin) => user()?->can('update', $plugin))
+                        ->authorize(fn (Plugin $plugin) => user()?->can('update', $plugin) && user()->can('update settings'))
                         ->icon(TablerIcon::Palette)
                         ->visible(fn (Plugin $plugin, ThemeService $themeService) => $plugin->isSwitchableTheme() && $plugin->status === PluginStatus::Enabled && $themeService->getDefaultThemeId() !== $plugin->id)
                         ->modalHeading(trans('admin/plugin.default_theme_modal.heading'))

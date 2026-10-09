@@ -66,10 +66,13 @@ class EditProfile extends BaseEditProfile
 
     protected Request $request;
 
-    public function boot(OAuthService $oauthService, Request $request): void
+    protected ThemeService $themeService;
+
+    public function boot(OAuthService $oauthService, Request $request, ThemeService $themeService): void
     {
         $this->oauthService = $oauthService;
         $this->request = $request;
+        $this->themeService = $themeService;
     }
 
     public function getMaxWidth(): Width|string
@@ -659,7 +662,7 @@ class EditProfile extends BaseEditProfile
         $data['console_rows'] = (int) $this->getUser()->getCustomization(CustomizationKey::ConsoleRows);
         $data['console_graph_period'] = (int) $this->getUser()->getCustomization(CustomizationKey::ConsoleGraphPeriod);
         $data['dashboard_layout'] = $this->getUser()->getCustomization(CustomizationKey::DashboardLayout);
-        $data['theme'] = $this->getUser()->getCustomization(CustomizationKey::Theme);
+        $data['theme'] = $this->themeService->getSelectedOption();
         $data['button_style'] = $this->getUser()->getCustomization(CustomizationKey::ButtonStyle);
         $data['redirect_to_admin'] = $this->getUser()->getCustomization(CustomizationKey::RedirectToAdmin);
 

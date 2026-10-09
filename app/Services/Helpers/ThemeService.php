@@ -35,6 +35,23 @@ class ThemeService
     }
 
     /** @return array<string, string> */
+    public function getAllThemes(): array
+    {
+        return Plugin::query()
+            ->themes()
+            ->get()
+            ->filter(fn (Plugin $plugin) => $plugin->isSwitchableTheme())
+            ->mapWithKeys(fn (Plugin $plugin) => [$plugin->id => $plugin->name])
+            ->all();
+    }
+
+    /** @return array<string, string> */
+    public function getAllThemeOptions(): array
+    {
+        return [self::None => trans('profile.no_theme')] + $this->getAllThemes();
+    }
+
+    /** @return array<string, string> */
     public function getUserThemeOptions(): array
     {
         return [self::Default => trans('profile.default_theme')] + $this->getThemeOptions();
@@ -42,7 +59,7 @@ class ThemeService
 
     public function getActiveThemeId(): ?string
     {
-        $themeId = $this->isForced() ? self::Default : (user()?->getCustomization(CustomizationKey::Theme) ?? self::Default);
+        $themeId = $this->isForced() ? self::Default : $this->getSelectedOption();
 
         if ($themeId === self::Default) {
             $themeId = config('panel.filament.default-theme');
@@ -65,7 +82,11 @@ class ThemeService
     {
         $themeId = user()?->getCustomization(CustomizationKey::Theme);
 
-        return is_string($themeId) && array_key_exists($themeId, $this->getUserThemeOptions()) ? $themeId : self::Default;
+        if ($themeId === self::None) {
+            return self::None;
+        }
+
+        return is_string($themeId) && $this->isTheme($themeId) ? $themeId : self::Default;
     }
 
     public function isActive(string $themeId): bool

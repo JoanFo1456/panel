@@ -76,6 +76,7 @@ return [
         'import_exists' => 'A plugin with that id already exists',
         'import_no_manifest' => 'The zip does not contain a valid plugin.json',
         'import_invalid_id' => 'The plugin.json contains an invalid id',
+        'import_reserved_id' => 'The plugin id ":id" is reserved by the Panel',
         'import_id_mismatch' => 'The zip is for plugin ":actual", not ":expected"',
         'import_checksum_mismatch' => 'The downloaded zip does not match the checksum from the update feed',
         'import_failed' => 'Could not import plugin',
