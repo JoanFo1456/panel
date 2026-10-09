@@ -29,6 +29,11 @@ return [
     'change_load_order' => 'Change load order',
     'apply_load_order' => 'Apply load order',
 
+    'enable_theme_modal' => [
+        'heading' => 'Theme already enabled',
+        'description' => 'You already have a theme enabled. Enabling multiple themes can result in visual bugs. Do you want to continue?',
+    ],
+
     'default_theme_modal' => [
         'heading' => 'Default theme',
         'description' => 'Should this theme also become the default theme?',

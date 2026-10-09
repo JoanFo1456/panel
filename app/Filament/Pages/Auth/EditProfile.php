@@ -68,6 +68,8 @@ class EditProfile extends BaseEditProfile
 
     protected ThemeService $themeService;
 
+    protected bool $themeChanged = false;
+
     public function boot(OAuthService $oauthService, Request $request, ThemeService $themeService): void
     {
         $this->oauthService = $oauthService;
@@ -633,7 +635,7 @@ class EditProfile extends BaseEditProfile
             'console_rows' => $data['console_rows'],
             'console_graph_period' => $data['console_graph_period'],
             'dashboard_layout' => $data['dashboard_layout'],
-            'theme' => $data['theme'] ?? $this->getUser()->getCustomization(CustomizationKey::Theme),
+            'theme' => $theme = $data['theme'] ?? $this->getUser()->getCustomization(CustomizationKey::Theme),
             'top_navigation' => $data['top_navigation'],
             'button_style' => $data['button_style'],
             'redirect_to_admin' => $data['redirect_to_admin'] ?? $this->getUser()->getCustomization(CustomizationKey::RedirectToAdmin),
@@ -652,7 +654,16 @@ class EditProfile extends BaseEditProfile
 
         $data['customization'] = json_encode($customization);
 
+        $this->themeChanged = $theme !== $this->getUser()->getCustomization(CustomizationKey::Theme);
+
         return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        if ($this->themeChanged) {
+            $this->js('window.location.reload()');
+        }
     }
 
     protected function mutateFormDataBeforeFill(array $data): array

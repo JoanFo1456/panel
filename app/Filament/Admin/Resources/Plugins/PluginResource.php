@@ -174,9 +174,10 @@ class PluginResource extends Resource
                         ->icon(TablerIcon::Check)
                         ->color('success')
                         ->visible(fn (Plugin $plugin) => $plugin->canEnable())
-                        ->modalHidden(fn (Plugin $plugin) => !$plugin->isSwitchableTheme() || !user()?->can('update settings'))
-                        ->modalHeading(trans('admin/plugin.default_theme_modal.heading'))
-                        ->modalDescription(trans('admin/plugin.default_theme_modal.description'))
+                        ->requiresConfirmation(fn (Plugin $plugin, PluginService $pluginService) => $plugin->isTheme() && !$plugin->isSwitchableTheme() && $pluginService->hasAnyThemeEnabled())
+                        ->modalHidden(fn (Plugin $plugin) => $plugin->isSwitchableTheme() && !user()->can('update settings'))
+                        ->modalHeading(fn (Plugin $plugin) => $plugin->isSwitchableTheme() ? trans('admin/plugin.default_theme_modal.heading') : trans('admin/plugin.enable_theme_modal.heading'))
+                        ->modalDescription(fn (Plugin $plugin) => $plugin->isSwitchableTheme() ? trans('admin/plugin.default_theme_modal.description') : trans('admin/plugin.enable_theme_modal.description'))
                         ->schema(fn (Plugin $plugin) => $plugin->isSwitchableTheme() && user()?->can('update settings') ? static::defaultThemeSchema() : null)
                         ->action(function (Plugin $plugin, array $data, $livewire, PluginService $pluginService, ThemeService $themeService) {
                             $pluginService->enablePlugin($plugin);
