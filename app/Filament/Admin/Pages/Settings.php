@@ -238,6 +238,17 @@ class Settings extends Page implements HasSchemas
                 ->selectablePlaceholder(false)
                 ->visible(fn () => $this->themeService->getThemes() !== [])
                 ->default(config('panel.filament.default-theme')),
+            Toggle::make('FILAMENT_FORCE_THEME')
+                ->label(trans('admin/setting.general.force_theme'))
+                ->hintIcon(TablerIcon::QuestionMark, trans('admin/setting.general.force_theme_help'))
+                ->inline(false)
+                ->onIcon(TablerIcon::Check)
+                ->offIcon(TablerIcon::X)
+                ->onColor('success')
+                ->offColor('danger')
+                ->stateCast(new BooleanStateCast(false))
+                ->visible(fn () => $this->themeService->getThemes() !== [])
+                ->default(env('FILAMENT_FORCE_THEME', config('panel.filament.force-theme'))),
             ToggleButtons::make('APP_2FA_REQUIRED')
                 ->label(trans('admin/setting.general.2fa_requirement'))
                 ->inline()

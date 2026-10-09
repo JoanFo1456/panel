@@ -73,10 +73,10 @@ abstract class PanelProvider extends BasePanelProvider
                     ->url(fn () => EditProfile::getUrl(panel: 'app')),
             ])
             ->authenticatedRoutes(fn () => Route::post('theme', UpdateThemeController::class)->name('theme'))
-            ->renderHook(PanelsRenderHook::USER_MENU_PROFILE_AFTER, fn (ThemeService $themeService) => $themeService->getThemes() === [] ? '' : view('filament.components.theme-select', [
+            ->renderHook(PanelsRenderHook::USER_MENU_PROFILE_AFTER, fn (ThemeService $themeService) => $themeService->canChooseTheme() ? view('filament.components.theme-select', [
                 'themes' => $themeService->getUserThemeOptions(),
                 'selected' => $themeService->getSelectedOption(),
-            ]))
+            ]) : '')
             ->login(Login::class)
             ->passwordReset()
             ->multiFactorAuthentication([

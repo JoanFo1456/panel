@@ -20,6 +20,7 @@ return [
     'update' => 'Update',
     'enable' => 'Enable',
     'disable' => 'Disable',
+    'set_default_theme' => 'Set as Default Theme',
     'import_from_file' => 'Import from File',
     'import_from_url' => 'Import from URL',
     'file' => 'File',
@@ -28,15 +29,12 @@ return [
     'change_load_order' => 'Change load order',
     'apply_load_order' => 'Apply load order',
 
-    'enable_theme_modal' => [
-        'heading' => 'Theme already enabled',
-        'description' => 'You already have a theme enabled. Enabling multiple themes can result in visual bugs. Do you want to continue?',
-    ],
-
     'default_theme_modal' => [
-        'heading' => 'Enable theme',
+        'heading' => 'Default theme',
         'description' => 'Should this theme also become the default theme?',
         'set_as_default' => 'Set as default theme',
+        'force_theme' => 'Force this theme',
+        'force_theme_help' => 'Applies the default theme to everyone and hides the theme picker.',
     ],
 
     'status_enum' => [
@@ -55,6 +53,7 @@ return [
 
     'notifications' => [
         'goto_plugins' => 'Go to Plugins',
+        'default_theme_set' => 'Default theme updated',
         'background_info' => 'This process can take a few seconds. You will be notified once it\'s finished.',
 
         'install_started' => 'Plugin install started in the background',

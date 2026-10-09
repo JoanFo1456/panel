@@ -21,6 +21,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Http\UploadedFile;
@@ -172,18 +174,15 @@ class PluginResource extends Resource
                         ->icon(TablerIcon::Check)
                         ->color('success')
                         ->visible(fn (Plugin $plugin) => $plugin->canEnable())
-                        ->requiresConfirmation(fn (Plugin $plugin, PluginService $pluginService) => $plugin->isTheme() && !$plugin->isSwitchableTheme() && $pluginService->hasThemePluginEnabled())
-                        ->modalHeading(fn (Plugin $plugin) => $plugin->isSwitchableTheme() ? trans('admin/plugin.default_theme_modal.heading') : trans('admin/plugin.enable_theme_modal.heading'))
-                        ->modalDescription(fn (Plugin $plugin) => $plugin->isSwitchableTheme() ? trans('admin/plugin.default_theme_modal.description') : trans('admin/plugin.enable_theme_modal.description'))
-                        ->schema(fn (Plugin $plugin) => $plugin->isSwitchableTheme() ? [
-                            Toggle::make('set_as_default')
-                                ->label(trans('admin/plugin.default_theme_modal.set_as_default')),
-                        ] : null)
+                        ->modalHidden(fn (Plugin $plugin) => !$plugin->isSwitchableTheme())
+                        ->modalHeading(trans('admin/plugin.default_theme_modal.heading'))
+                        ->modalDescription(trans('admin/plugin.default_theme_modal.description'))
+                        ->schema(fn (Plugin $plugin) => $plugin->isSwitchableTheme() ? static::defaultThemeSchema() : null)
                         ->action(function (Plugin $plugin, array $data, $livewire, PluginService $pluginService, ThemeService $themeService) {
                             $pluginService->enablePlugin($plugin);
 
                             if ($data['set_as_default'] ?? false) {
-                                $themeService->setDefaultTheme($plugin->id);
+                                $themeService->setDefaultTheme($plugin->id, (bool) ($data['force_theme'] ?? false));
                             }
 
                             redirect(ListPlugins::getUrl(['tab' => $livewire->activeTab]));
@@ -191,6 +190,29 @@ class PluginResource extends Resource
                             Notification::make()
                                 ->success()
                                 ->title(trans('admin/plugin.notifications.enabled'))
+                                ->send();
+                        }),
+                    Action::make('exclude_set_default_theme')
+                        ->label(trans('admin/plugin.set_default_theme'))
+                        ->authorize(fn (Plugin $plugin) => user()?->can('update', $plugin))
+                        ->icon(TablerIcon::Palette)
+                        ->visible(fn (Plugin $plugin, ThemeService $themeService) => $plugin->isSwitchableTheme() && $plugin->status === PluginStatus::Enabled && $themeService->getDefaultThemeId() !== $plugin->id)
+                        ->modalHeading(trans('admin/plugin.default_theme_modal.heading'))
+                        ->schema([
+                            Toggle::make('force_theme')
+                                ->label(trans('admin/plugin.default_theme_modal.force_theme'))
+                                ->helperText(trans('admin/plugin.default_theme_modal.force_theme_help'))
+                                ->default(fn (ThemeService $themeService) => $themeService->isForced()),
+                        ])
+                        ->action(function (Plugin $plugin, array $data, $livewire, ThemeService $themeService) {
+                            $themeService->setDefaultTheme($plugin->id, (bool) ($data['force_theme'] ?? false));
+
+                            redirect(ListPlugins::getUrl(['tab' => $livewire->activeTab]));
+
+                            Notification::make()
+                                ->success()
+                                ->title(trans('admin/plugin.notifications.default_theme_set'))
+                                ->body($plugin->name)
                                 ->send();
                         }),
                     Action::make('exclude_disable')
@@ -336,6 +358,21 @@ class PluginResource extends Resource
     {
         return [
             'index' => ListPlugins::route('/'),
+        ];
+    }
+
+    /** @return Component[] */
+    protected static function defaultThemeSchema(): array
+    {
+        return [
+            Toggle::make('set_as_default')
+                ->label(trans('admin/plugin.default_theme_modal.set_as_default'))
+                ->live(),
+            Toggle::make('force_theme')
+                ->label(trans('admin/plugin.default_theme_modal.force_theme'))
+                ->helperText(trans('admin/plugin.default_theme_modal.force_theme_help'))
+                ->visible(fn (Get $get) => (bool) $get('set_as_default'))
+                ->default(fn (ThemeService $themeService) => $themeService->isForced()),
         ];
     }
 }

@@ -494,7 +494,7 @@ class EditProfile extends BaseEditProfile
                                 ->label(trans('profile.theme'))
                                 ->options(fn (ThemeService $themeService) => $themeService->getUserThemeOptions())
                                 ->selectablePlaceholder(false)
-                                ->visible(fn (ThemeService $themeService) => $themeService->getThemes() !== []),
+                                ->visible(fn (ThemeService $themeService) => $themeService->canChooseTheme()),
                         ]),
                     Section::make(trans('profile.admin'))
                         ->collapsible()

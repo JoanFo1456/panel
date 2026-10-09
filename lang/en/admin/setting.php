@@ -23,6 +23,8 @@ return [
         'default_navigation' => 'Default Navigation Type',
         'default_theme' => 'Default Theme',
         'default_theme_help' => 'The theme users who have not picked one themselves see.',
+        'force_theme' => 'Force Default Theme',
+        'force_theme_help' => 'Apply the default theme to everyone and hide the theme picker.',
         'sidebar' => 'Sidebar',
         'topbar' => 'Topbar',
         'mixed' => 'Mixed',

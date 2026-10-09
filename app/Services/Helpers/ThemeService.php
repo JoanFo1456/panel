@@ -42,13 +42,23 @@ class ThemeService
 
     public function getActiveThemeId(): ?string
     {
-        $themeId = user()?->getCustomization(CustomizationKey::Theme) ?? self::Default;
+        $themeId = $this->isForced() ? self::Default : (user()?->getCustomization(CustomizationKey::Theme) ?? self::Default);
 
         if ($themeId === self::Default) {
             $themeId = config('panel.filament.default-theme');
         }
 
         return is_string($themeId) && $this->isTheme($themeId) ? $themeId : null;
+    }
+
+    public function isForced(): bool
+    {
+        return (bool) config('panel.filament.force-theme');
+    }
+
+    public function canChooseTheme(): bool
+    {
+        return !$this->isForced() && $this->getThemes() !== [];
     }
 
     public function getSelectedOption(): string
@@ -63,9 +73,19 @@ class ThemeService
         return $this->getActiveThemeId() === $themeId;
     }
 
-    public function setDefaultTheme(string $themeId): void
+    public function getDefaultThemeId(): ?string
     {
-        $this->writeToEnvironment(['FILAMENT_DEFAULT_THEME' => $themeId]);
+        $themeId = config('panel.filament.default-theme');
+
+        return is_string($themeId) && $themeId !== '' ? $themeId : null;
+    }
+
+    public function setDefaultTheme(string $themeId, bool $force = false): void
+    {
+        $this->writeToEnvironment([
+            'FILAMENT_DEFAULT_THEME' => $themeId,
+            'FILAMENT_FORCE_THEME' => $force,
+        ]);
     }
 
     private function isTheme(string $themeId): bool
