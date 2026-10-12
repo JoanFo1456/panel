@@ -5,6 +5,7 @@ return [
     'tabs_wings' => 'Wings',
     'tabs_panel' => 'Panel',
     'wings_unreachable' => 'This node did not answer. It may be offline, or running a version of Wings without plugin support.',
+    'api_version_missing' => '⚠ plugin.json does not declare an api_version, assuming 1',
     'nav_title' => 'Plugins',
     'model_label' => 'Plugin',
     'model_label_plural' => 'Plugins',
@@ -30,6 +31,8 @@ return [
     'all' => 'All',
     'change_load_order' => 'Change load order',
     'apply_load_order' => 'Apply load order',
+    'crashed_reload' => ':name crashed and has been disabled, reload the page to continue.',
+    'safe_mode_active' => 'Safe mode is on, so no plugins are loaded. Unset PANEL_PLUGIN_SAFE_MODE to load them again.',
 
     'enable_theme_modal' => [
         'heading' => 'Theme already enabled',
@@ -42,6 +45,7 @@ return [
         'enabled' => 'Enabled',
         'errored' => 'Errored',
         'incompatible' => 'Incompatible',
+        'crashed' => 'Crashed',
     ],
 
     'category_enum' => [
@@ -65,6 +69,7 @@ return [
         'update_started' => 'Plugin update started in the background',
         'updated' => 'Plugin updated',
         'update_error' => 'Could not update plugin',
+        'crashed' => 'A plugin crashed and has been disabled',
 
         'enabled' => 'Plugin enabled',
         'enable_error' => 'Could not enable plugin',
@@ -77,6 +82,7 @@ return [
         'import_no_manifest' => 'The zip does not contain a valid plugin.json',
         'import_invalid_id' => 'The plugin.json contains an invalid id',
         'import_id_mismatch' => 'The zip is for plugin ":actual", not ":expected"',
+        'import_checksum_mismatch' => 'The downloaded zip does not match the checksum from the update feed',
         'import_failed' => 'Could not import plugin',
     ],
 ];

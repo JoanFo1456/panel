@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Plugins\Pages;
 use App\Enums\PluginCategory;
 use App\Enums\TablerIcon;
 use App\Filament\Admin\Resources\Plugins\PluginResource;
+use App\Livewire\AlertBanner;
 use App\Models\Plugin;
 use App\Models\WingsPlugin;
 use App\Services\Helpers\PluginService;
@@ -49,6 +50,8 @@ class ListPlugins extends ListRecords
      */
     public function reorderTable(array $order, int|string|null $draggedRecordKey = null): void
     {
+        abort_unless($this->getTable()->isReorderable(), 403);
+
         if (!$this->isWingsTab()) {
             /** @var PluginService $pluginService */
             $pluginService = app(PluginService::class); // @phpstan-ignore myCustomRules.forbiddenGlobalFunctions
@@ -84,6 +87,18 @@ class ListPlugins extends ListRecords
         }
 
         WingsPlugin::flush();
+    }
+
+    public function mount(): void
+    {
+        parent::mount();
+
+        if (config('panel.plugin.safe_mode')) {
+            AlertBanner::make('plugin_safe_mode')
+                ->title(trans('admin/plugin.safe_mode_active'))
+                ->warning()
+                ->send();
+        }
     }
 
     public function getTabs(): array

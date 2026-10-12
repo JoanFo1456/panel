@@ -124,6 +124,7 @@ class PluginResource extends Resource
                     ->label(trans('admin/plugin.status'))
                     ->badge()
                     ->tooltip(fn (Plugin $record) => $record->status_message)
+                    ->description(fn (Plugin $record) => is_null($record->api_version) ? trans('admin/plugin.api_version_missing') : null)
                     ->sortable(),
             ])
             ->recordActions([
@@ -195,7 +196,7 @@ class PluginResource extends Resource
                         ->authorize(fn (Plugin $record) => user()?->can('update', $record))
                         ->icon(TablerIcon::Download)
                         ->color('success')
-                        ->visible(fn (Plugin $record) => $record->status !== PluginStatus::NotInstalled && $record->isUpdateAvailable())
+                        ->visible(fn (Plugin $record) => $record->isUpdateAvailable())
                         ->action(function (Plugin $record) {
                             try {
                                 UpdatePlugin::dispatch(user(), $record->id);
@@ -338,7 +339,12 @@ class PluginResource extends Resource
                             /** @var UploadedFile $file */
                             $file = $data['file'];
 
-                            $pluginService->downloadPluginFromFile($file);
+                            $id = $pluginService->downloadPluginFromFile($file);
+
+                            // Importing over an installed plugin is an update: reinstall it in the background.
+                            if ($pluginService->isInstalled($id)) {
+                                InstallPlugin::dispatch(user(), $id, reinstall: true);
+                            }
 
                             Notification::make()
                                 ->success()
@@ -371,7 +377,12 @@ class PluginResource extends Resource
                     ])
                     ->action(function ($data, $livewire, PluginService $pluginService) {
                         try {
-                            $pluginService->downloadPluginFromUrl($data['url']);
+                            $id = $pluginService->downloadPluginFromUrl($data['url']);
+
+                            // Importing over an installed plugin is an update: reinstall it in the background.
+                            if ($pluginService->isInstalled($id)) {
+                                InstallPlugin::dispatch(user(), $id, reinstall: true);
+                            }
 
                             Notification::make()
                                 ->success()
