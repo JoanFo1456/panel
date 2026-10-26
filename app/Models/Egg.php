@@ -239,6 +239,22 @@ class Egg extends Model implements Validatable
     }
 
     /**
+     * Whether the given install script entrypoint is a PowerShell one, which only exists in Windows containers.
+     */
+    public static function isWindowsScriptEntry(?string $entry): bool
+    {
+        return in_array(str($entry)->afterLast('/')->afterLast('\\')->lower()->chopEnd('.exe')->toString(), ['powershell', 'pwsh']);
+    }
+
+    /**
+     * Whether the egg runs in Windows containers.
+     */
+    public function isWindowsEgg(): bool
+    {
+        return in_array('windows', $this->features ?? []) || self::isWindowsScriptEntry($this->copy_script_entry);
+    }
+
+    /**
      * Return the file configuration for an egg.
      */
     public function getInheritConfigFilesAttribute(): ?string

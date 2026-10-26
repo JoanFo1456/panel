@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Servers\Pages;
 
 use App\Enums\TablerIcon;
+use App\Filament\Admin\Resources\Eggs\EggResource;
 use App\Filament\Admin\Resources\Servers\ServerResource;
 use App\Filament\Components\Forms\Fields\StartupVariable;
 use App\Models\Allocation;
@@ -361,6 +362,7 @@ class CreateServer extends CreateRecord
                     'lg' => 6,
                 ])
                 ->schema([
+                    EggResource::serverWindowsWarning(),
                     Select::make('egg_id')
                         ->label(trans('admin/server.name'))
                         ->prefixIcon(TablerIcon::Egg)

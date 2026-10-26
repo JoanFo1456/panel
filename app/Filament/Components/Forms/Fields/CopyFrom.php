@@ -2,6 +2,7 @@
 
 namespace App\Filament\Components\Forms\Fields;
 
+use App\Filament\Admin\Resources\Eggs\EggResource;
 use App\Models\Egg;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Utilities\Set;
@@ -59,6 +60,7 @@ class CopyFrom extends Select
                 $set('script_container', 'ghcr.io/pelican-eggs/installers:debian');
                 $set('script_entry', 'bash');
                 $livewire->dispatch('setContent', content: '');
+                $livewire->dispatch('setLanguage', lang: EggResource::scriptLanguage('bash')->value);
 
                 return;
             }
@@ -66,6 +68,7 @@ class CopyFrom extends Select
             $set('script_container', $egg->script_container);
             $set('script_entry', $egg->script_entry);
             $livewire->dispatch('setContent', content: $egg->script_install);
+            $livewire->dispatch('setLanguage', lang: EggResource::scriptLanguage($egg->script_entry)->value);
         });
 
         return $this;

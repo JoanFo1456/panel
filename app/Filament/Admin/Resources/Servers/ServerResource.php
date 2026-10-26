@@ -7,6 +7,7 @@ use App\Enums\SuspendAction;
 use App\Enums\TablerIcon;
 use App\Extensions\BackupAdapter\BackupAdapterService;
 use App\Extensions\BackupAdapter\Schemas\WingsBackupSchema;
+use App\Filament\Admin\Resources\Eggs\EggResource;
 use App\Filament\Admin\Resources\Servers\Pages\CreateServer;
 use App\Filament\Admin\Resources\Servers\Pages\EditServer;
 use App\Filament\Admin\Resources\Servers\Pages\ListServers;
@@ -659,6 +660,7 @@ class ServerResource extends Resource
                     'lg' => 5,
                 ])
                 ->schema([
+                    EggResource::serverWindowsWarning(),
                     Select::make('egg_id')
                         ->disabled()
                         ->prefixIcon(TablerIcon::Egg)

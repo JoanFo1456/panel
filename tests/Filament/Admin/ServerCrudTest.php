@@ -57,6 +57,17 @@ it('can create a server', function () {
     ]);
 });
 
+it('warns about windows eggs on the create server form', function (array $features, bool $warned) {
+    $egg = Egg::factory()->create(['features' => $features]);
+
+    $test = livewire(CreateServer::class)->fillForm(['egg_id' => $egg->id]);
+
+    $warned ? $test->assertSee(trans('admin/egg.windows_warning_text')) : $test->assertDontSee(trans('admin/egg.windows_warning_text'));
+})->with([
+    'linux egg' => [[], false],
+    'windows egg' => [['windows'], true],
+]);
+
 it('can edit a server', function () {
     $server = Server::factory()->withNode()->create();
 

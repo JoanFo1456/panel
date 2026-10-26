@@ -2,7 +2,6 @@
 
 namespace App\Filament\Admin\Resources\Eggs\Pages;
 
-use App\Enums\EditorLanguages;
 use App\Enums\TablerIcon;
 use App\Filament\Admin\Resources\Eggs\EggResource;
 use App\Filament\Components\Forms\Fields\CopyFrom;
@@ -17,7 +16,6 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -65,6 +63,7 @@ class CreateEgg extends CreateRecord
     {
         return $schema
             ->components([
+                EggResource::formWindowsWarning(),
                 Tabs::make()
                     ->tabs($this->getTabs())
                     ->columnSpanFull()
@@ -115,8 +114,7 @@ class CreateEgg extends CreateRecord
                         ->placeholder('denied-file.txt')
                         ->helperText(trans('admin/egg.file_denylist_help'))
                         ->columnSpan(['default' => 1, 'sm' => 1, 'md' => 2, 'lg' => 2]),
-                    TagsInput::make('features')
-                        ->label(trans('admin/egg.features'))
+                    EggResource::featuresInput()
                         ->columnSpan(['default' => 1, 'sm' => 1, 'md' => 1, 'lg' => 1]),
                     Toggle::make('force_outgoing_ip')
                         ->label(trans('admin/egg.force_ip'))
@@ -271,19 +269,11 @@ class CreateEgg extends CreateRecord
                         ->required()
                         ->maxLength(255)
                         ->default('ghcr.io/pelican-eggs/installers:debian'),
-                    Select::make('script_entry')
-                        ->label(trans('admin/egg.script_entry'))
-                        ->selectablePlaceholder(false)
-                        ->default('bash')
-                        ->options([
-                            'bash' => 'bash',
-                            'ash' => 'ash',
-                            '/bin/bash' => '/bin/bash',
-                        ])
-                        ->required(),
+                    EggResource::scriptEntrySelect()
+                        ->default('bash'),
                     MonacoEditor::make('script_install')
                         ->label(trans('admin/egg.script_install'))
-                        ->language(EditorLanguages::shell)
+                        ->language(fn (Get $get) => EggResource::scriptLanguage($get('script_entry')))
                         ->columnSpanFull()
                         ->lazy(),
                 ]),

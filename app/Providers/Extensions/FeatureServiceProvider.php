@@ -8,6 +8,7 @@ use App\Extensions\Features\Schemas\JavaVersionSchema;
 use App\Extensions\Features\Schemas\MinecraftEulaSchema;
 use App\Extensions\Features\Schemas\PIDLimitSchema;
 use App\Extensions\Features\Schemas\SteamDiskSpaceSchema;
+use App\Extensions\Features\Schemas\WindowsSchema;
 use Illuminate\Support\ServiceProvider;
 
 class FeatureServiceProvider extends ServiceProvider
@@ -23,6 +24,7 @@ class FeatureServiceProvider extends ServiceProvider
             $provider->register(new MinecraftEulaSchema());
             $provider->register(new PIDLimitSchema());
             $provider->register(new SteamDiskSpaceSchema());
+            $provider->register(new WindowsSchema());
 
             return $provider;
         });

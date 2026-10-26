@@ -30,6 +30,7 @@ class EditEgg extends EditRecord
     {
         return $schema
             ->components([
+                EggResource::formWindowsWarning(),
                 Tabs::make()
                     ->tabs($this->getTabs())
                     ->columnSpanFull()

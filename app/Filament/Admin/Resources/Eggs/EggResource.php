@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Eggs;
 use App\Enums\CustomizationKey;
 use App\Enums\EditorLanguages;
 use App\Enums\TablerIcon;
+use App\Extensions\Features\FeatureService;
 use App\Filament\Admin\Resources\Eggs\Pages\CreateEgg;
 use App\Filament\Admin\Resources\Eggs\Pages\EditEgg;
 use App\Filament\Admin\Resources\Eggs\Pages\ListEggs;
@@ -31,6 +32,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Callout;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Image;
@@ -38,6 +40,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Validation\Rules\Unique;
+use Livewire\Component;
 
 class EggResource extends Resource
 {
@@ -180,8 +183,7 @@ class EggResource extends Resource
                         ->url()
                         ->hintIcon(TablerIcon::QuestionMark, trans('admin/egg.update_url_help'))
                         ->columnSpan(['default' => 2, 'sm' => 2, 'md' => 2, 'lg' => 3]),
-                    TagsInput::make('features')
-                        ->label(trans('admin/egg.features'))
+                    static::featuresInput()
                         ->columnSpan(['default' => 2, 'sm' => 2, 'md' => 2, 'lg' => 3]),
                     Hidden::make('script_is_privileged')
                         ->helperText(trans('admin/egg.docker_help')),
@@ -326,20 +328,76 @@ class EggResource extends Resource
                         ->required()
                         ->maxLength(255)
                         ->placeholder('ghcr.io/pelican-eggs/installers:debian'),
-                    Select::make('script_entry')
-                        ->label(trans('admin/egg.script_entry'))
-                        ->selectablePlaceholder(false)
-                        ->options([
-                            'bash' => 'bash',
-                            'ash' => 'ash',
-                            '/bin/bash' => '/bin/bash',
-                        ])
-                        ->required(),
+                    static::scriptEntrySelect(),
                     MonacoEditor::make('script_install')
                         ->hiddenLabel()
-                        ->language(EditorLanguages::shell)
+                        ->language(fn (Get $get) => static::scriptLanguage($get('script_entry')))
                         ->columnSpanFull(),
                 ]),
         ];
+    }
+
+    public static function featuresInput(): TagsInput
+    {
+        return TagsInput::make('features')
+            ->label(trans('admin/egg.features'))
+            ->hintIcon(TablerIcon::QuestionMark, trans('admin/egg.features_help'))
+            ->suggestions(fn (FeatureService $featureService) => array_keys($featureService->getAll()))
+            ->live();
+    }
+
+    /**
+     * The entrypoint of the installation script. PowerShell entrypoints are for eggs running in Windows containers.
+     */
+    public static function scriptEntrySelect(): Select
+    {
+        return Select::make('script_entry')
+            ->label(trans('admin/egg.script_entry'))
+            ->selectablePlaceholder(false)
+            ->options([
+                'bash' => 'bash',
+                'ash' => 'ash',
+                '/bin/bash' => '/bin/bash',
+                'powershell.exe' => 'powershell.exe',
+                'pwsh.exe' => 'pwsh.exe',
+            ])
+            ->required()
+            ->live()
+            ->afterStateUpdated(fn (?string $state, Component $livewire) => $livewire->dispatch('setLanguage', lang: static::scriptLanguage($state)->value));
+    }
+
+    public static function scriptLanguage(?string $entry): EditorLanguages
+    {
+        return Egg::isWindowsScriptEntry($entry) ? EditorLanguages::powershell : EditorLanguages::shell;
+    }
+
+    /**
+     * Warns that Wings cannot run Windows eggs yet.
+     */
+    public static function windowsWarning(): Callout
+    {
+        return Callout::make(trans('admin/egg.windows_warning'))
+            ->description(trans('admin/egg.windows_warning_text'))
+            ->icon(TablerIcon::BrandWindows)
+            ->danger()
+            ->columnSpanFull();
+    }
+
+    /**
+     * The warning for the server forms, shown when the selected egg runs in Windows containers.
+     */
+    public static function serverWindowsWarning(): Callout
+    {
+        return static::windowsWarning()
+            ->visible(fn (Get $get) => Egg::query()->find($get('egg_id'))?->isWindowsEgg() ?? false);
+    }
+
+    /**
+     * The warning for the egg form, shown as soon as the form turns the egg into a Windows egg.
+     */
+    public static function formWindowsWarning(): Callout
+    {
+        return static::windowsWarning()
+            ->visible(fn (Get $get) => in_array('windows', $get('features') ?? []) || Egg::isWindowsScriptEntry($get('script_entry')));
     }
 }

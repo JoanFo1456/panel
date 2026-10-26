@@ -26,6 +26,7 @@ class ViewEgg extends ViewRecord
     {
         return $schema
             ->components([
+                EggResource::formWindowsWarning(),
                 Tabs::make()
                     ->tabs($this->getTabs())
                     ->columnSpanFull()
